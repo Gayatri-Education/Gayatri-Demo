@@ -1,0 +1,18 @@
+﻿[
+  {
+    "id": "mod_chem_thermo",
+    "course_id": "crs_chem_opt",
+    "title": "Chemical Thermodynamics",
+    "description": "First law, enthalpy, Hess's law, entropy, and Gibbs free energy criteria.",
+    "prerequisites": [],
+    "order": 1
+  },
+  {
+    "id": "mod_chem_bonding",
+    "course_id": "crs_chem_opt",
+    "title": "Chemical Bonding & Molecular Structure",
+    "description": "VSEPR theory, valence bond theory, hybridisation, and molecular orbital theory.",
+    "prerequisites": ["mod_chem_thermo"],
+    "order": 2
+  }
+]

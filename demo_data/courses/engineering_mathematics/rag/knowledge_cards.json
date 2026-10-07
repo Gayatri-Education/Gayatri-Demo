@@ -1,0 +1,38 @@
+﻿[
+  {
+    "id": "math_card_01",
+    "source_id": "src_math_textbook",
+    "course_id": "crs_engg_math",
+    "module_id": "mod_math_ode",
+    "title": "First-Order Linear Ordinary Differential Equations",
+    "content": "A first-order linear ODE has the standard form dy/dx + P(x)y = Q(x). It is solved using the Integrating Factor I(x) = exp(integral(P(x) dx)). Multiplying the entire equation by I(x) condenses the left-hand side into the exact derivative d/dx [y * I(x)] = Q(x) * I(x), which integrates directly to y * I(x) = integral(Q(x) * I(x) dx) + C.",
+    "tags": ["differential_equations", "integrating_factor", "linear_ode", "calculus"]
+  },
+  {
+    "id": "math_card_02",
+    "source_id": "src_math_textbook",
+    "course_id": "crs_engg_math",
+    "module_id": "mod_math_laplace",
+    "title": "Definition and Properties of the Laplace Transform",
+    "content": "The one-sided Laplace Transform of a function f(t) defined for t >= 0 is given by L{f(t)} = F(s) = integral from 0 to infinity of e^(-st) * f(t) dt. Key elementary transforms include L{1} = 1/s, L{e^(at)} = 1/(s - a) for s > a, and L{t^n} = n! / s^(n+1). For derivatives, L{f'(t)} = s * F(s) - f(0), which transforms differential equations into algebraic equations.",
+    "tags": ["laplace_transform", "integral_transform", "differential_equations", "initial_value_problem"]
+  },
+  {
+    "id": "math_card_03",
+    "source_id": "src_math_textbook",
+    "course_id": "crs_engg_math",
+    "module_id": "mod_math_fourier",
+    "title": "Fourier Series Representation of Periodic Functions",
+    "content": "A periodic function f(x) with period 2L satisfying Dirichlet conditions can be expanded as f(x) = a0/2 + sum_{n=1}^inf [an * cos(n*pi*x/L) + bn * sin(n*pi*x/L)]. The Euler-Fourier coefficients are: an = (1/L) * integral_{-L}^L f(x) * cos(n*pi*x/L) dx, and bn = (1/L) * integral_{-L}^L f(x) * sin(n*pi*x/L) dx. For an even function, bn = 0; for an odd function, an = 0 and a0 = 0.",
+    "tags": ["fourier_series", "harmonic_analysis", "orthogonality", "periodic_functions"]
+  },
+  {
+    "id": "math_card_04",
+    "source_id": "src_math_textbook",
+    "course_id": "crs_engg_math",
+    "module_id": "mod_math_linalg",
+    "title": "Eigenvalues, Eigenvectors, and Characteristic Equations",
+    "content": "For a square n x n matrix A, a scalar lambda is an eigenvalue and non-zero vector v is an eigenvector if A * v = lambda * v. This is equivalent to (A - lambda * I) * v = 0. Non-trivial solutions exist if and only if det(A - lambda * I) = 0, which is the characteristic polynomial of degree n. The sum of eigenvalues equals the trace of A, and their product equals det(A).",
+    "tags": ["linear_algebra", "eigenvalues", "characteristic_equation", "matrices"]
+  }
+]

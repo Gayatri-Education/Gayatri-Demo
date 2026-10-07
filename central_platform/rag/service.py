@@ -1,4 +1,4 @@
-﻿"""Gayatri AI Platform — Scoped RAG Service with Strict Course Isolation."""
+"""Gayatri AI Platform - Scoped RAG Service with Strict Course Isolation."""
 from __future__ import annotations
 
 import json
@@ -61,7 +61,6 @@ class BM25Retriever:
             df = self.doc_freqs.get(token, 0)
             if df == 0:
                 continue
-            # Standard IDF
             idf = math.log(1.0 + (self.corpus_size - df + 0.5) / (df + 0.5))
             for idx, doc_tokens in enumerate(self.tokenized_corpus):
                 tf = doc_tokens.count(token)
@@ -87,9 +86,7 @@ class RAGService:
 
     def __init__(self, courses_dir: Optional[Path] = None) -> None:
         self.courses_dir = courses_dir or COURSES_DIR
-        # Partitioned index: course_id -> BM25Retriever
         self._course_indices: Dict[str, BM25Retriever] = {}
-        # Raw cards: course_id -> List[RAGChunk]
         self._course_chunks: Dict[str, List[RAGChunk]] = {}
         self.reload_all_courses()
 
@@ -112,7 +109,7 @@ class RAGService:
         if rag_dir.exists():
             for file_path in rag_dir.glob("*.json"):
                 try:
-                    with open(file_path, "r", encoding="utf-8") as f:
+                    with open(file_path, "r", encoding="utf-8-sig") as f:
                         data = json.load(f)
                     if isinstance(data, list):
                         for item in data:
@@ -130,7 +127,6 @@ class RAGService:
         if not retriever:
             return []
         results = retriever.query(query_text, top_k=top_k)
-        # Invariant check: every result MUST match course_id
         for r in results:
             if r.course_id != course_id:
                 raise RuntimeError(f"RAG Isolation Violation: chunk {r.id} leaked into {course_id}")
@@ -151,7 +147,6 @@ class RAGService:
             if not content.strip():
                 return False, "Document contains no readable text", 0
 
-            # Chunk into atomic passages
             paragraphs = [p.strip() for p in content.split("\n\n") if p.strip()]
             new_chunks: List[RAGChunk] = []
             source_id = f"src_{uuid.uuid4().hex[:8]}"
@@ -168,7 +163,6 @@ class RAGService:
                 )
                 new_chunks.append(chunk)
 
-            # Append to in-memory chunks and rebuild BM25 index
             existing = self._course_chunks.setdefault(course_id, [])
             existing.extend(new_chunks)
             self._course_indices[course_id] = BM25Retriever(existing)

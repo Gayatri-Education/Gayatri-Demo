@@ -1,0 +1,11 @@
+﻿[
+  {
+    "id": "chem_card_01",
+    "source_id": "src_chem_ncert",
+    "course_id": "crs_chem_opt",
+    "module_id": "mod_chem_thermo",
+    "title": "Gibbs Free Energy and Spontaneity Criterion",
+    "content": "Gibbs Free Energy G is defined as G = H - TS. For a process occurring at constant temperature and pressure, Delta G = Delta H - T * Delta S. A process is spontaneous if Delta G < 0, non-spontaneous if Delta G > 0, and at dynamic equilibrium when Delta G = 0.",
+    "tags": ["thermodynamics", "gibbs_free_energy", "spontaneity", "enthalpy", "entropy"]
+  }
+]

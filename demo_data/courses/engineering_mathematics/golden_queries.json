@@ -1,0 +1,17 @@
+﻿[
+  {
+    "query": "Explain first-order differential equations and integrating factor",
+    "expected_card_id": "math_card_01",
+    "module_id": "mod_math_ode"
+  },
+  {
+    "query": "What is the Laplace transform of a derivative?",
+    "expected_card_id": "math_card_02",
+    "module_id": "mod_math_laplace"
+  },
+  {
+    "query": "How do you calculate Fourier series coefficients for an odd function?",
+    "expected_card_id": "math_card_03",
+    "module_id": "mod_math_fourier"
+  }
+]

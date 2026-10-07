@@ -1,0 +1,8 @@
+﻿{
+  "id": "crs_engg_math",
+  "code": "MATH201",
+  "title": "Engineering Mathematics",
+  "description": "Foundational mathematical techniques for engineering analysis: differential equations, integral transforms, and vector calculus.",
+  "is_active": true,
+  "is_optional": false
+}

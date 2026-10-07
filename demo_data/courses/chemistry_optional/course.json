@@ -1,0 +1,8 @@
+﻿{
+  "id": "crs_chem_opt",
+  "code": "CHEM101",
+  "title": "Senior Secondary Chemistry (Optional Showcase)",
+  "description": "Optional legacy showcase covering chemical thermodynamics, molecular bonding, and periodic trends.",
+  "is_active": true,
+  "is_optional": true
+}

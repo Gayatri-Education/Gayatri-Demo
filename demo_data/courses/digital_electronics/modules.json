@@ -1,0 +1,34 @@
+﻿[
+  {
+    "id": "mod_elec_bool",
+    "course_id": "crs_digital_elec",
+    "title": "Boolean Algebra & Logic Simplification",
+    "description": "Axioms, De Morgan's laws, duality theorem, Karnaugh maps, and Quine-McCluskey minimization.",
+    "prerequisites": [],
+    "order": 1
+  },
+  {
+    "id": "mod_elec_gates",
+    "course_id": "crs_digital_elec",
+    "title": "Logic Gates & Universal Realizations",
+    "description": "AND, OR, NOT, NAND, NOR, XOR, XNOR gates; universal NAND/NOR logic realization.",
+    "prerequisites": ["mod_elec_bool"],
+    "order": 2
+  },
+  {
+    "id": "mod_elec_comb",
+    "course_id": "crs_digital_elec",
+    "title": "Combinational Logic Circuits",
+    "description": "Adders, subtractors, multiplexers, demultiplexers, encoders, and decoders.",
+    "prerequisites": ["mod_elec_gates"],
+    "order": 3
+  },
+  {
+    "id": "mod_elec_seq",
+    "course_id": "crs_digital_elec",
+    "title": "Sequential Circuits & Flip-Flops",
+    "description": "SR latches, D flip-flops, JK flip-flops, T flip-flops, master-slave operation, and counters.",
+    "prerequisites": ["mod_elec_comb"],
+    "order": 4
+  }
+]

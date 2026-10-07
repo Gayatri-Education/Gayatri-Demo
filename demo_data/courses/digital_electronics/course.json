@@ -1,0 +1,8 @@
+﻿{
+  "id": "crs_digital_elec",
+  "code": "EC202",
+  "title": "Digital Electronics",
+  "description": "Analysis and design of digital logic circuits: Boolean algebra, combinational networks, synchronous state machines, and sequential systems.",
+  "is_active": true,
+  "is_optional": false
+}

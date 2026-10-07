@@ -1,0 +1,17 @@
+﻿[
+  {
+    "query": "What is De Morgan's theorem and how is it used in circuit design?",
+    "expected_card_id": "elec_card_01",
+    "module_id": "mod_elec_bool"
+  },
+  {
+    "query": "Why are NAND and NOR called universal gates?",
+    "expected_card_id": "elec_card_02",
+    "module_id": "mod_elec_gates"
+  },
+  {
+    "query": "Explain difference between half adder and full adder",
+    "expected_card_id": "elec_card_03",
+    "module_id": "mod_elec_comb"
+  }
+]

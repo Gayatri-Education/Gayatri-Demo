@@ -1,0 +1,38 @@
+﻿[
+  {
+    "id": "elec_card_01",
+    "source_id": "src_digital_textbook",
+    "course_id": "crs_digital_elec",
+    "module_id": "mod_elec_bool",
+    "title": "De Morgan's Theorems and Boolean Duality",
+    "content": "De Morgan's First Theorem states that the complement of a logical product equals the sum of the complements: (A * B)' = A' + B'. De Morgan's Second Theorem states that the complement of a logical sum equals the product of the complements: (A + B)' = A' * B'. In gate terms, a NAND gate is equivalent to an active-low OR gate (Bubbled OR), and a NOR gate is equivalent to an active-low AND gate (Bubbled AND).",
+    "tags": ["boolean_algebra", "de_morgan", "logic_duality", "theorems"]
+  },
+  {
+    "id": "elec_card_02",
+    "source_id": "src_digital_textbook",
+    "course_id": "crs_digital_elec",
+    "module_id": "mod_elec_gates",
+    "title": "Universal Logic Gates (NAND and NOR)",
+    "content": "NAND and NOR gates are termed universal gates because any combinational or sequential Boolean function can be constructed using only one of these gate types. A NAND gate yields logic 0 only when ALL inputs are 1; otherwise, its output is 1. Tying all inputs of a NAND together produces a NOT gate. Inverting the output of a NAND gate produces an AND gate. Using De Morgan's theorem, an OR gate is synthesized as (A' * B')' using three NAND gates.",
+    "tags": ["logic_gates", "universal_gates", "nand_logic", "nor_logic"]
+  },
+  {
+    "id": "elec_card_03",
+    "source_id": "src_digital_textbook",
+    "course_id": "crs_digital_elec",
+    "module_id": "mod_elec_comb",
+    "title": "Half Adders and Full Adders in Combinational Arithmetic",
+    "content": "A Half Adder adds two 1-bit binary inputs A and B producing Sum = A XOR B and Carry = A AND B. It cannot accept an incoming carry from a prior stage. A Full Adder adds three 1-bit inputs: A, B, and Carry-In (Cin). Its equations are Sum = A XOR B XOR Cin, and Carry-Out (Cout) = (A * B) + (Cin * (A XOR B)). A Full Adder can be constructed from two Half Adders and an OR gate.",
+    "tags": ["combinational_circuits", "half_adder", "full_adder", "binary_arithmetic"]
+  },
+  {
+    "id": "elec_card_04",
+    "source_id": "src_digital_textbook",
+    "course_id": "crs_digital_elec",
+    "module_id": "mod_elec_seq",
+    "title": "Edge-Triggered Flip-Flops and Sequential State Elements",
+    "content": "Unlike combinational circuits whose outputs depend solely on present inputs, sequential circuits employ memory elements whose state depends on past inputs. A transparent latch responds continuously to inputs while the enable signal is high. An edge-triggered flip-flop samples inputs and transitions state only at a discrete clock transition (positive or negative edge). JK flip-flops eliminate the forbidden state of SR latches by toggling when J = 1 and K = 1.",
+    "tags": ["sequential_circuits", "flip_flops", "jk_flip_flop", "clocking", "latches"]
+  }
+]
