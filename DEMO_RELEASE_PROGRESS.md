@@ -1,4 +1,4 @@
-# GAYATRI DEMO v4.0.0 â€” RELEASE PROGRESS LEDGER
+# GAYATRI DEMO v4.0.0 Ã¢â‚¬â€ RELEASE PROGRESS LEDGER
 
 - **Authoritative Reference:** `Gayatri-Education/Gayatri` (Commit: `eee87194be0e69fa0f11923d2a59869f0f215816`)
 - **Authoritative Contract:** `DEMO_RELEASE_CONTRACT.md` (SHA256: `F1703332F2E19D590AA24D800B57F06870A7C5EEC522B51C9F94EA37B94A3BF8`)
@@ -15,8 +15,8 @@
 | 1 | Product Reset & UX Spec | COMPLETE | 2026-10-08 01:53 | 2026-10-08 01:54 | AI Agent | 1/1 | None | 40e0003 |
 | 2 | Architecture Boundary | COMPLETE | 2026-10-08 01:55 | 2026-10-08 02:03 | AI Agent | 1/1 | None | 066c9aa |
 | 3 | Course Model & Datasets | COMPLETE | 2026-10-08 02:04 | 2026-10-08 02:07 | AI Agent | 3/3 | None | 3cc1610 |
-| 4 | RAG Pipeline & Isolation | IN PROGRESS | 2026-10-08 02:07 | | AI Agent | 0/0 | None | |
-| 5 | Generic Tutor Orchestrator | NOT STARTED | | | AI Agent | 0/0 | None | |
+| 4 | RAG Pipeline & Isolation | COMPLETE | 2026-10-08 02:07 | 2026-10-08 02:08 | AI Agent | 7/7 | None | a320781 |
+| 5 | Generic Tutor Orchestrator | IN PROGRESS | 2026-10-08 02:08 | | AI Agent | 0/0 | None | |
 | 6 | Student UX & Multi-Course UI | NOT STARTED | | | AI Agent | 0/0 | None | |
 | 7 | Teacher & Admin Previews | NOT STARTED | | | AI Agent | 0/0 | None | |
 | 8 | Offline-First & Network Audit | NOT STARTED | | | AI Agent | 0/0 | None | |
@@ -42,4 +42,4 @@
 
 | Date | Old Decision | New Decision | Rationale | Affected Phases | Approval |
 |---|---|---|---|---|---|
-| 2026-10-08 | Chemistry-only v3.x | Multi-Course Platform v4.0.0 | Reposition to institutional adaptive learning platform | All (0â€“15) | Contract Authority |
+| 2026-10-08 | Chemistry-only v3.x | Multi-Course Platform v4.0.0 | Reposition to institutional adaptive learning platform | All (0Ã¢â‚¬â€œ15) | Contract Authority |
