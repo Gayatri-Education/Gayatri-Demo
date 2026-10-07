@@ -1,4 +1,4 @@
-# GAYATRI PLATFORM v4.0.0 — OFFICIAL RELEASE EVIDENCE REPORT
+# GAYATRI PLATFORM v4.0.0 â€” OFFICIAL RELEASE EVIDENCE REPORT
 
 **Verification Date:** 2026-10-08  
 **Verification Target:** Gayatri Demo v4.0.0  
@@ -61,7 +61,7 @@ Full automated test suite executed via `pytest -v`:
 
 | File | Size (Bytes) | SHA-256 Checksum |
 |---|---|---|
-| `Gayatri_Adaptive_Learning_Platform_v4.0.0_Portable.zip` | 565,268 | `545DE21DA99F5B7AF319969351B50C635532A58FD707C32589777FDD99102E87` |
+| `Gayatri_Adaptive_Learning_Platform_v4.0.0_Portable.zip` | 565,268 | `4904166843DEA97754C5E67A96A2D1D220DB0B82F0F8D2DA6957BC86AFDB1C42` |
 
 ---
 
