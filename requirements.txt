@@ -1,0 +1,8 @@
+﻿# Gayatri Demo v4.0.0 — Runtime & Packaging Dependencies
+# Offline-First, Zero External Network Egress
+
+PySide6>=6.6.0
+pydantic>=2.0.0
+pytest>=8.0.0
+pypdf>=4.0.0
+python-docx>=1.1.0

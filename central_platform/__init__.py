@@ -1,0 +1,1 @@
+﻿"""Gayatri AI Platform — Subsystems."""

@@ -11,9 +11,9 @@
 
 | Phase | Description | Status | Start | End | Owner | Tests Passed | Blockers | Commit SHA |
 |---|---|---|---|---|---|---|---|---|
-| 0 | Baseline & Forensics | COMPLETE | 2026-10-08 01:50 | 2026-10-08 01:52 | AI Agent | 3/3 | None | pending |
-| 1 | Product Reset & UX Spec | NOT STARTED | | | AI Agent | 0/0 | None | |
-| 2 | Architecture Boundary | NOT STARTED | | | AI Agent | 0/0 | None | |
+| 0 | Baseline & Forensics | COMPLETE | 2026-10-08 01:50 | 2026-10-08 01:52 | AI Agent | 3/3 | None | 2ff7b5a |
+| 1 | Product Reset & UX Spec | COMPLETE | 2026-10-08 01:53 | 2026-10-08 01:54 | AI Agent | 1/1 | None | 40e0003 |
+| 2 | Architecture Boundary | IN PROGRESS | 2026-10-08 01:55 | | AI Agent | 0/0 | None | |
 | 3 | Course Model & Datasets | NOT STARTED | | | AI Agent | 0/0 | None | |
 | 4 | RAG Pipeline & Isolation | NOT STARTED | | | AI Agent | 0/0 | None | |
 | 5 | Generic Tutor Orchestrator | NOT STARTED | | | AI Agent | 0/0 | None | |
