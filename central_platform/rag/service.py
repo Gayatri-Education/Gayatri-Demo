@@ -88,22 +88,37 @@ class RAGService:
         self.courses_dir = courses_dir or COURSES_DIR
         self._course_indices: Dict[str, BM25Retriever] = {}
         self._course_chunks: Dict[str, List[RAGChunk]] = {}
+        self._id_alias: Dict[str, str] = {}
         self.reload_all_courses()
 
     def reload_all_courses(self) -> None:
         """Loads and builds isolated BM25 indices for every course."""
         self._course_indices.clear()
         self._course_chunks.clear()
+        self._id_alias.clear()
 
         if not self.courses_dir.exists():
             return
 
         for course_folder in self.courses_dir.iterdir():
             if course_folder.is_dir():
-                course_id = course_folder.name
-                self._load_course_cards(course_folder, course_id)
+                folder_name = course_folder.name
+                course_id = folder_name
+                course_file = course_folder / "course.json"
+                if course_file.exists():
+                    try:
+                        with open(course_file, "r", encoding="utf-8-sig") as cf:
+                            c_data = json.load(cf)
+                            if "id" in c_data:
+                                course_id = c_data["id"]
+                    except Exception:
+                        pass
+                
+                self._id_alias[folder_name] = course_id
+                self._id_alias[course_id] = course_id
+                self._load_course_cards(course_folder, course_id, folder_name)
 
-    def _load_course_cards(self, course_folder: Path, course_id: str) -> None:
+    def _load_course_cards(self, course_folder: Path, course_id: str, folder_name: str) -> None:
         rag_dir = course_folder / "rag"
         chunks: List[RAGChunk] = []
         if rag_dir.exists():
@@ -118,26 +133,36 @@ class RAGService:
                 except Exception as exc:
                     logger.error("Failed to parse RAG cards from %s: %s", file_path, exc)
 
+        retriever = BM25Retriever(chunks)
         self._course_chunks[course_id] = chunks
-        self._course_indices[course_id] = BM25Retriever(chunks)
+        self._course_indices[course_id] = retriever
+        if folder_name != course_id:
+            self._course_chunks[folder_name] = chunks
+            self._course_indices[folder_name] = retriever
 
     def query(self, query_text: str, course_id: str, top_k: int = RAG_TOP_K) -> List[RAGChunk]:
         """Strict course-isolated retrieval. Returns only chunks belonging to course_id."""
         retriever = self._course_indices.get(course_id)
         if not retriever:
+            canonical = self._id_alias.get(course_id)
+            if canonical:
+                retriever = self._course_indices.get(canonical)
+        if not retriever:
             return []
+
         results = retriever.query(query_text, top_k=top_k)
+        target_canonical = self._id_alias.get(course_id, course_id)
+
         for r in results:
-            if r.course_id != course_id:
-                raise RuntimeError(f"RAG Isolation Violation: chunk {r.id} leaked into {course_id}")
+            card_canonical = self._id_alias.get(r.course_id, r.course_id)
+            if card_canonical != target_canonical:
+                raise RuntimeError(f"RAG Isolation Violation: chunk {r.id} ({card_canonical}) leaked into {course_id} ({target_canonical})")
         return results
 
     def get_course_chunk_count(self, course_id: str) -> int:
-        """Returns the number of indexed cards for a given course."""
         return len(self._course_chunks.get(course_id, []))
 
     def ingest_document(self, file_path: Path, course_id: str) -> tuple[bool, str, int]:
-        """Safely parses, chunks, and indexes an uploaded document into course_id."""
         ok, reason = RAGSecuritySanitizer.validate_upload(file_path)
         if not ok:
             return False, reason, 0
@@ -151,21 +176,26 @@ class RAGService:
             new_chunks: List[RAGChunk] = []
             source_id = f"src_{uuid.uuid4().hex[:8]}"
 
+            canonical_id = self._id_alias.get(course_id, course_id)
+            self._id_alias[course_id] = canonical_id
+
             for i, para in enumerate(paragraphs[:MAX_CHUNKS_PER_DOCUMENT]):
                 title = para.split("\n")[0][:60]
                 chunk = RAGChunk(
                     id=f"chk_up_{uuid.uuid4().hex[:8]}",
                     source_id=source_id,
-                    course_id=course_id,
+                    course_id=canonical_id,
                     title=f"Custom: {title}",
                     content=para,
                     tags=["custom_upload", RAGSecuritySanitizer.sanitize_filename(file_path.name)]
                 )
                 new_chunks.append(chunk)
 
-            existing = self._course_chunks.setdefault(course_id, [])
+            existing = self._course_chunks.setdefault(canonical_id, [])
             existing.extend(new_chunks)
-            self._course_indices[course_id] = BM25Retriever(existing)
+            retriever = BM25Retriever(existing)
+            self._course_indices[canonical_id] = retriever
+            self._course_indices[course_id] = retriever
 
             return True, f"Successfully indexed {len(new_chunks)} knowledge cards", len(new_chunks)
         except Exception as exc:
