@@ -1,0 +1,7 @@
+# Control Systems Engineering - Transfer Functions and Stability
+
+A transfer function G(s) represents the linear relationship between the Laplace transform of the output Y(s) and the input U(s), assuming zero initial conditions: G(s) = Y(s) / U(s).
+
+Routh-Hurwitz Stability Criterion states that a linear time-invariant system is stable if and only if all roots of the characteristic polynomial have strictly negative real parts. This is determined by constructing the Routh array and ensuring no sign changes occur in the first column.
+
+Bode plots represent the frequency response through two logarithmic graphs: magnitude in decibels (dB) versus frequency, and phase angle in degrees versus frequency. Gain margin and phase margin quantify relative stability.
