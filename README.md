@@ -42,27 +42,60 @@ Gayatri solves this through localized, course-independent neural and symbolic in
 
 ---
 
-## 🎥 Captioned Demonstration Walkthrough
+## 🎥 Captioned Demonstration Walkthroughs
+
+Three dedicated, high-definition (720p HD) demonstration videos with on-screen dynamic captions are provided for different institutional stakeholders:
+
+---
+
+### 1. 🎓 Core Platform & Adaptive Learner Walkthrough
+*Designed for academic evaluators, curriculum committees, and students.*
 
 <div align="center">
   <img src="demo_video/gayatri_demo_preview.gif" alt="Gayatri Platform Demonstration Walkthrough" width="100%" style="border-radius: 8px; border: 1px solid #334155;" />
   <p>
-    <b>Interactive Multi-Course Demonstration with On-Screen Dynamic Captions</b><br>
+    <b>Course-Independent Socratic Tutoring & Scoped RAG Grounding</b><br>
     🎬 <a href="demo_video/gayatri_v4_platform_demo.webm"><b>View High-Definition Video (WebM — 3.89 MB)</b></a> | 
     ⬇️ <a href="https://raw.githubusercontent.com/Gayatri-Education/Gayatri-Demo/main/demo_video/gayatri_v4_platform_demo.webm"><b>Direct Raw Download</b></a> |
-    ⚙️ <a href="scripts/record_demo_video.py"><b>Reproducible Recording Script</b></a>
+    ⚙️ <a href="scripts/record_demo_video.py"><b>Recording Script</b></a>
   </p>
 </div>
 
-The automated demonstration showcases:
-1. **Platform Vision & Air-Gapped Security** (Offline architecture, loopback-only binding).
-2. **Multi-Course Catalog Navigation** (Engineering Mathematics & Digital Electronics).
-3. **Scoped Socratic Tutoring & RAG Grounding** (Interactive ODE query & Retrieved Evidence Drawer).
-4. **Dynamic Course Switching & Context Isolation** (Zero cross-course knowledge leakage).
-5. **Real-Time Misconception Diagnosis** (Detection of NAND Logic Inversion Error & guided remediation).
-6. **Student Cognitive Mastery Tracking** (Topic-level competency breakdown & trajectory updates).
-7. **Teacher Copilot & Cohort Health Alerts** (Misconception distribution & intervention queue).
-8. **Bring Your Curriculum Ingestion Sandbox** (Dynamic indexing of syllabus documents).
+- **Key Highlights:** Real-time ODE inquiry, Retrieved Evidence Drawer citations, dynamic course switching to Digital Electronics with instant memory flush, and detection & remediation of the *NAND/NOR Logic Inversion Error*.
+
+---
+
+### 2. 👩‍🏫 Teacher Copilot & Faculty Walkthrough
+*Designed for educators, professors, teaching assistants, and department heads.*
+
+<div align="center">
+  <img src="demo_video/gayatri_teacher_preview.gif" alt="Gayatri Teacher Copilot Walkthrough" width="100%" style="border-radius: 8px; border: 1px solid #334155;" />
+  <p>
+    <b>Classroom Intelligence, Cohort Health & Student Intervention Queue</b><br>
+    🎬 <a href="demo_video/gayatri_teacher_demo.webm"><b>View High-Definition Video (WebM — 3.22 MB)</b></a> | 
+    ⬇️ <a href="https://raw.githubusercontent.com/Gayatri-Education/Gayatri-Demo/main/demo_video/gayatri_teacher_demo.webm"><b>Direct Raw Download</b></a> |
+    ⚙️ <a href="scripts/record_teacher_demo.py"><b>Recording Script</b></a>
+  </p>
+</div>
+
+- **Key Highlights:** Class-level mastery tracking (42 students, 74.2% average), automated cohort misconception alerts (28% struggling with logic duality), student triage roster (identifying learners needing review before exams), Socratic anti-cheating scaffolding, and faculty note ingestion into local RAG.
+
+---
+
+### 3. 🏛️ Institution, School & Organization Governance Walkthrough
+*Designed for university leadership, school boards, deans, CIOs, and compliance officers.*
+
+<div align="center">
+  <img src="demo_video/gayatri_institution_preview.gif" alt="Gayatri Institution Administration Walkthrough" width="100%" style="border-radius: 8px; border: 1px solid #334155;" />
+  <p>
+    <b>Air-Gapped Topology, Data Sovereignty & Enterprise Knowledge Oversight</b><br>
+    🎬 <a href="demo_video/gayatri_institution_demo.webm"><b>View High-Definition Video (WebM — 3.47 MB)</b></a> | 
+    ⬇️ <a href="https://raw.githubusercontent.com/Gayatri-Education/Gayatri-Demo/main/demo_video/gayatri_institution_demo.webm"><b>Direct Raw Download</b></a> |
+    ⚙️ <a href="scripts/record_institution_demo.py"><b>Recording Script</b></a>
+  </p>
+</div>
+
+- **Key Highlights:** 100% Offline Air-Gapped Topology, strict loopback (`127.0.0.1`), zero outbound telemetry, multi-department course boundary enforcement, Microsoft Defender Clean PE binaries, and complete FERPA/DPDP data sovereignty.
 
 ---
 

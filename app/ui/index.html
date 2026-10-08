@@ -459,6 +459,48 @@
             <div style="margin-top: 6px; color: #94a3b8;">Recommended action: Assign 10-minute targeted review on universal gate duality before next lab session.</div>
           </div>
         </div>
+        <div class="stat-card" style="margin-top: 16px;">
+          <div style="font-weight: 600; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <span>Student Intervention Queue</span>
+            <span style="font-size: 11px; color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 2px 8px; border-radius: 4px;">4 Monitored Students</span>
+          </div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 1px solid #334155; color: #94a3b8;">
+                <th style="padding: 8px 6px;">Student Name</th>
+                <th style="padding: 8px 6px;">Mastery</th>
+                <th style="padding: 8px 6px;">Weak Area</th>
+                <th style="padding: 8px 6px;">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 8px 6px; font-weight: 600;">Aarav Sharma</td>
+                <td style="padding: 8px 6px; color: #27c93f;">82%</td>
+                <td style="padding: 8px 6px; color: #cbd5e1;">Laplace Derivatives</td>
+                <td style="padding: 8px 6px;"><span style="color: #27c93f; background: rgba(39, 201, 63, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px;">On Track</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 8px 6px; font-weight: 600;">Diya Patel</td>
+                <td style="padding: 8px 6px; color: #f5c542;">64%</td>
+                <td style="padding: 8px 6px; color: #cbd5e1;">Inversion Laws</td>
+                <td style="padding: 8px 6px;"><span style="color: #f5c542; background: rgba(245, 197, 66, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px;">Needs Review</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 8px 6px; font-weight: 600;">Rohan Iyer</td>
+                <td style="padding: 8px 6px; color: #27c93f;">91%</td>
+                <td style="padding: 8px 6px; color: #cbd5e1;">None</td>
+                <td style="padding: 8px 6px;"><span style="color: #27c93f; background: rgba(39, 201, 63, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px;">Excelling</span></td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 6px; font-weight: 600;">Ananya Reddy</td>
+                <td style="padding: 8px 6px; color: #e94560;">58%</td>
+                <td style="padding: 8px 6px; color: #cbd5e1;">Integrating Factors</td>
+                <td style="padding: 8px 6px;"><span style="color: #e94560; background: rgba(233, 69, 96, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px;">Intervention Recommended</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <!-- 6. Institution Admin Preview (Screen K) -->
@@ -466,11 +508,68 @@
         <h2 style="margin-bottom: 6px;">Institution Administration & Governance</h2>
         <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Curriculum oversight, knowledge repository status, and security compliance.</p>
 
+        <div class="stats-row" style="margin-bottom: 16px;">
+          <div class="stat-card">
+            <div class="stat-lbl">Active Curricula</div>
+            <div class="stat-val">3 Courses</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-lbl">Air-Gapped RAG Scope</div>
+            <div class="stat-val" style="color: #27c93f;">100% Isolated</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-lbl">Data Sovereignty</div>
+            <div class="stat-val" style="color: #38bdf8; font-size: 16px;">Zero Cloud Egress</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-lbl">Antivirus Posture</div>
+            <div class="stat-val" style="color: #27c93f; font-size: 16px;">Defender Clean</div>
+          </div>
+        </div>
+
         <div class="stat-card" style="margin-bottom: 16px;">
           <div style="font-weight: 600; margin-bottom: 8px;">Institutional Deployment Topology</div>
           <p style="font-size: 13px; color: #94a3b8; line-height: 1.6;">
-            Instance ID: <code style="color: #38bdf8;">gayatri-inst-demo-local</code> | Mode: <strong>Offline Air-Gapped</strong> | Egress Policy: <strong>Zero Outbound</strong>
+            Instance ID: <code style="color: #38bdf8;">gayatri-inst-demo-local</code> | Mode: <strong>Offline Air-Gapped</strong> | Binding: <code style="color: #38bdf8;">127.0.0.1 (Strict Loopback Only)</code> | Telemetry: <strong>Zero Outbound</strong>
           </p>
+        </div>
+
+        <div class="stat-card" style="margin-bottom: 16px;">
+          <div style="font-weight: 600; margin-bottom: 12px;">Registered Institutional Course Repositories</div>
+          <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
+            <thead>
+              <tr style="border-bottom: 1px solid #334155; color: #94a3b8;">
+                <th style="padding: 8px 6px;">Course Code</th>
+                <th style="padding: 8px 6px;">Department / Title</th>
+                <th style="padding: 8px 6px;">Modules</th>
+                <th style="padding: 8px 6px;">RAG Chunks</th>
+                <th style="padding: 8px 6px;">Isolation Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 8px 6px; font-weight: 700; color: #38bdf8;">MATH201</td>
+                <td style="padding: 8px 6px;">Engineering Mathematics</td>
+                <td style="padding: 8px 6px;">4 Modules</td>
+                <td style="padding: 8px 6px;">4 Cards</td>
+                <td style="padding: 8px 6px;"><span style="color: #27c93f; background: rgba(39, 201, 63, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px;">Active & Isolated</span></td>
+              </tr>
+              <tr style="border-bottom: 1px solid #1e293b;">
+                <td style="padding: 8px 6px; font-weight: 700; color: #38bdf8;">EC202</td>
+                <td style="padding: 8px 6px;">Digital Electronics</td>
+                <td style="padding: 8px 6px;">4 Modules</td>
+                <td style="padding: 8px 6px;">4 Cards</td>
+                <td style="padding: 8px 6px;"><span style="color: #27c93f; background: rgba(39, 201, 63, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px;">Active & Isolated</span></td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 6px; font-weight: 700; color: #f5c542;">CHEM101</td>
+                <td style="padding: 8px 6px;">Senior Secondary Chemistry</td>
+                <td style="padding: 8px 6px;">2 Modules</td>
+                <td style="padding: 8px 6px;">1 Card</td>
+                <td style="padding: 8px 6px;"><span style="color: #f5c542; background: rgba(245, 197, 66, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 11px;">Optional Showcase</span></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
