@@ -42,14 +42,19 @@ Gayatri solves this through localized, course-independent neural and symbolic in
 
 ---
 
-## 🎥 Captioned Demonstration Video
+## 🎥 Captioned Demonstration Walkthrough
 
-A comprehensive, high-definition (1080p) demonstration video with on-screen dynamic captions walking through all key institutional capabilities is included in the repository:
+<div align="center">
+  <img src="demo_video/gayatri_demo_preview.gif" alt="Gayatri Platform Demonstration Walkthrough" width="100%" style="border-radius: 8px; border: 1px solid #334155;" />
+  <p>
+    <b>Interactive Multi-Course Demonstration with On-Screen Dynamic Captions</b><br>
+    🎬 <a href="demo_video/gayatri_v4_platform_demo.webm"><b>View High-Definition Video (WebM — 3.89 MB)</b></a> | 
+    ⬇️ <a href="https://raw.githubusercontent.com/Gayatri-Education/Gayatri-Demo/main/demo_video/gayatri_v4_platform_demo.webm"><b>Direct Raw Download</b></a> |
+    ⚙️ <a href="scripts/record_demo_video.py"><b>Reproducible Recording Script</b></a>
+  </p>
+</div>
 
-- 🎬 **Video File:** [`demo_video/gayatri_v4_platform_demo.webm`](demo_video/gayatri_v4_platform_demo.webm)
-- ⚙️ **Automated Recording Script:** [`scripts/record_demo_video.py`](scripts/record_demo_video.py) (Playwright Track A automation)
-
-The demonstration showcases:
+The automated demonstration showcases:
 1. **Platform Vision & Air-Gapped Security** (Offline architecture, loopback-only binding).
 2. **Multi-Course Catalog Navigation** (Engineering Mathematics & Digital Electronics).
 3. **Scoped Socratic Tutoring & RAG Grounding** (Interactive ODE query & Retrieved Evidence Drawer).

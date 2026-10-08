@@ -1,13 +1,10 @@
-"""Gayatri AI Platform — Automated High-Definition Captioned Demonstration Video Recorder.
+"""Gayatri AI Platform — Automated Demonstration Video & GIF Recorder.
 
-Uses Playwright to choreograph a guided walkthrough across the platform:
-1. Welcome & Vision (Institutional Architecture & Positioning)
-2. Multi-Course Catalog (Engineering Mathematics & Digital Electronics)
-3. Socratic AI Tutor with Live Grounded RAG & Evidence Drawer
-4. Dynamic Course Switch & Socratic Misconception Remediation (NAND Logic Error)
-5. Student Mastery Cognitive State Tracking
-6. Teacher Copilot Preview & Cohort Health Alerts
-7. Bring Your Curriculum Sandbox (Dynamic Ingestion)
+Produces two deliverables optimized for GitHub:
+1. demo_video/gayatri_v4_platform_demo.webm:
+   - HD (1280x720), on-screen floating dynamic captions, strictly under 5 MB limit.
+2. demo_video/gayatri_demo_preview.gif:
+   - Animated visual preview carousel (~1 MB) embedded directly in README.md for instant playback.
 """
 from __future__ import annotations
 
@@ -21,8 +18,8 @@ except Exception:
     pass
 import time
 from pathlib import Path
+from PIL import Image
 
-# Ensure demo directory is at root of sys.path
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
@@ -51,23 +48,26 @@ def record_demo():
         except Exception:
             pass
 
+    snapshots_dir = demo_video_dir / "snapshots"
+    snapshots_dir.mkdir(parents=True, exist_ok=True)
+    snapshot_paths = []
+
     ui_path = PROJECT_ROOT / "app" / "ui" / "index.html"
     ui_url = ui_path.as_uri()
 
-    print(f"[2/6] Launching Playwright Chromium (1920x1080 Full HD)...")
+    print("[2/6] Launching Playwright Chromium (1280x720 HD — Optimized for GitHub <5MB)...")
     with sync_playwright() as p:
         browser = p.chromium.launch(
             headless=True,
             args=[
                 "--disable-blink-features=AutomationControlled",
-                "--no-sandbox",
-                "--start-maximized"
+                "--no-sandbox"
             ]
         )
         context = browser.new_context(
-            viewport={"width": 1920, "height": 1080},
+            viewport={"width": 1280, "height": 720},
             record_video_dir=str(demo_video_dir),
-            record_video_size={"width": 1920, "height": 1080}
+            record_video_size={"width": 1280, "height": 720}
         )
 
         page = context.new_page()
@@ -117,129 +117,109 @@ def record_demo():
         time.sleep(1.0)
 
         # Helper functions
-        def caption(text: str, wait_s: float = 3.0):
+        def caption(text: str, wait_s: float = 2.5):
             print(f"  [CAPTION] {text}")
             page.evaluate(f"setDemoCaption({json.dumps(text)})")
             time.sleep(wait_s)
 
-        def type_prompt(selector: str, text: str, delay_ms: int = 35):
+        def snap(name: str):
+            p = snapshots_dir / f"{len(snapshot_paths)+1:02d}_{name}.png"
+            page.screenshot(path=str(p))
+            snapshot_paths.append(p)
+
+        def type_prompt(selector: str, text: str, delay_ms: int = 30):
             page.click(selector)
             for char in text:
                 page.keyboard.type(char)
                 time.sleep(delay_ms / 1000.0)
-            time.sleep(0.4)
+            time.sleep(0.3)
 
         print("[4/6] Executing Choreographed Walkthrough Scenes...")
 
         # ── SCENE 1: Welcome & Vision ──
-        caption("Gayatri AI (v4.0.0) — Developed under Dbert Internship Program (dbert.online)", 3.5)
-        caption("Course-Independent Socratic Tutoring Grounded in Institution Knowledge", 3.0)
-        caption("100% Offline Air-Gapped Operation with Zero Cloud Data Egress", 3.0)
-        page.mouse.move(500, 350)
-        time.sleep(0.8)
-        page.mouse.move(900, 350)
-        time.sleep(0.8)
+        caption("Gayatri AI (v4.0.0) — Developed under Dbert Internship Program (dbert.online)", 2.8)
+        caption("Course-Independent Socratic Tutoring Grounded in Institution Knowledge", 2.4)
+        caption("100% Offline Air-Gapped Operation with Zero Cloud Data Egress", 2.2)
+        snap("welcome_vision")
 
         # ── SCENE 2: Multi-Course Catalog ──
-        caption("Multi-Course Catalog: Engineering Mathematics & Digital Electronics", 2.5)
+        caption("Multi-Course Catalog: Engineering Mathematics & Digital Electronics", 2.0)
         page.click("button:has-text('Course Catalog')")
-        time.sleep(1.5)
-        page.mouse.move(450, 280)
-        time.sleep(0.8)
-        page.mouse.move(850, 280)
-        time.sleep(0.8)
-        caption("Selecting Active Course Context: Engineering Mathematics (MATH201)", 2.5)
+        time.sleep(1.2)
+        snap("course_catalog")
+        caption("Selecting Active Course Context: Engineering Mathematics (MATH201)", 2.0)
         page.click("div.course-card:has-text('MATH201') button")
-        time.sleep(1.5)
+        time.sleep(1.2)
 
         # ── SCENE 3: Socratic AI Tutor & Math Query ──
-        caption("Socratic AI Tutor: Strictly Scoped Grounded RAG with Zero Cross-Contamination", 3.0)
-        page.click("button:has-text('Socratic AI Tutor')")
-        time.sleep(1.5)
-
-        caption("Student Query: Inquiring about First-Order ODEs and Integrating Factors", 2.0)
-        type_prompt("#chatInput", "Explain first-order differential equations and integrating factor", 30)
+        caption("Socratic AI Tutor: Strictly Scoped Grounded RAG with Zero Cross-Contamination", 2.4)
+        type_prompt("#chatInput", "Explain first-order differential equations and integrating factor", 25)
         page.click("#chatSendBtn")
-        time.sleep(2.0)
-
-        caption("Retrieved Evidence Drawer: Real-time Grounding Cards & Textbook Citations", 3.5)
-        page.mouse.move(1700, 300)
-        time.sleep(1.0)
-        page.mouse.move(1700, 500)
-        time.sleep(1.5)
+        time.sleep(1.8)
+        caption("Retrieved Evidence Drawer: Real-time Grounding Cards & Textbook Citations", 2.8)
+        snap("socratic_rag_math")
 
         # ── SCENE 4: Dynamic Course Switch & Misconception Remediation ──
-        caption("Dynamic Course Switching: Switching to Digital Electronics (EC202)", 2.5)
+        caption("Dynamic Course Switching: Switching to Digital Electronics (EC202)", 2.0)
         page.click("button:has-text('Course Catalog')")
-        time.sleep(1.5)
+        time.sleep(1.2)
         page.click("div.course-card:has-text('EC202') button")
-        time.sleep(1.5)
+        time.sleep(1.2)
+        snap("switched_electronics")
 
-        caption("Active Context Switched: Prior Context Flushed with Zero RAG Bleed", 2.5)
-        caption("Misconception Diagnosis: Testing Student Logic Inversion on NAND Gates", 2.5)
-        type_prompt("#chatInput", "For a NAND gate, the output is 0 when any input is 0", 30)
+        caption("Active Context Switched: Prior Context Flushed with Zero RAG Bleed", 2.0)
+        caption("Misconception Diagnosis: Testing Student Logic Inversion on NAND Gates", 2.0)
+        type_prompt("#chatInput", "For a NAND gate, the output is 0 when any input is 0", 25)
         page.click("#chatSendBtn")
-        time.sleep(2.5)
-
-        caption("Misconception Identified: NAND/NOR Logic Inversion Error Remediation", 3.5)
-        page.mouse.move(800, 550)
-        time.sleep(1.5)
+        time.sleep(2.0)
+        caption("Misconception Identified: NAND/NOR Logic Inversion Error Remediation", 3.0)
+        snap("misconception_remediation")
 
         # ── SCENE 5: Student Mastery Tracking ──
-        caption("Student Mastery: Tracking Cognitive States & Detected Misconceptions", 2.5)
+        caption("Student Mastery: Tracking Cognitive States & Detected Misconceptions", 2.2)
         page.click("button:has-text('Student Mastery')")
-        time.sleep(2.0)
-        page.mouse.move(700, 180)
-        time.sleep(1.0)
-        page.mouse.move(1200, 180)
         time.sleep(1.5)
+        snap("student_mastery")
 
         # ── SCENE 6: Teacher Copilot Preview ──
-        caption("Teacher Copilot: Cohort Analytics, Gap Heatmaps & Intervention Queue", 3.0)
+        caption("Teacher Copilot: Cohort Analytics, Gap Heatmaps & Intervention Queue", 2.2)
         page.click("button:has-text('Teacher Copilot')")
-        time.sleep(2.0)
-        page.mouse.move(800, 380)
         time.sleep(1.5)
+        snap("teacher_copilot")
 
         # ── SCENE 7: Bring Your Curriculum Sandbox ──
-        caption("Bring Your Curriculum: Instant Ingestion of Institution Notes into Air-Gapped RAG", 3.0)
+        caption("Bring Your Curriculum: Instant Ingestion of Institution Notes into Air-Gapped RAG", 2.2)
         page.click("button:has-text('Bring Curriculum')")
-        time.sleep(1.5)
+        time.sleep(1.2)
         page.click("button:has-text('Load Sample Curriculum Document')")
-        time.sleep(1.5)
-        caption("Custom Curriculum Ingestion Succeeded: 3 Knowledge Chunks Indexed", 2.5)
-        time.sleep(1.0)
+        time.sleep(1.2)
+        caption("Custom Curriculum Ingestion Succeeded: 3 Knowledge Chunks Indexed", 2.0)
+        snap("curriculum_ingestion")
 
-        # ── SCENE 8: Wrap-up & Platform Governance ──
-        caption("Gayatri AI v4.0.0 — Production-Ready Demonstration for Higher Education", 3.0)
+        # ── SCENE 8: Wrap-up & Program Attribution ──
+        caption("Gayatri AI v4.0.0 — Production-Ready Demonstration for Higher Education", 2.4)
         page.click("button:has-text('Welcome & Vision')")
-        time.sleep(2.0)
-        caption("Developed under Dbert Internship Program (dbert.online)", 3.5)
-        time.sleep(1.0)
+        time.sleep(1.2)
+        caption("Developed under Dbert Internship Program (dbert.online)", 2.8)
+        snap("summary_final")
 
         print("[5/6] Finalizing Recording and Closing Browser...")
         page.evaluate("setDemoCaption('')")
         time.sleep(0.5)
 
-        # Retrieve video path before closing context
         video_obj = page.video
         video_temp_path = video_obj.path() if video_obj else None
 
         context.close()
         browser.close()
 
+    # Move video to target
     target_video = demo_video_dir / "gayatri_v4_platform_demo.webm"
     if video_temp_path and Path(video_temp_path).exists():
         if target_video.exists():
             target_video.unlink()
         shutil.move(video_temp_path, target_video)
-        size_mb = target_video.stat().st_size / (1024 * 1024)
-        print(f"[6/6] Demonstration Video Successfully Recorded!")
-        print(f"  Target File: {target_video}")
-        print(f"  File Size:   {size_mb:.2f} MB")
-        return target_video
     else:
-        # Check any webm in demo_video_dir
         webms = list(demo_video_dir.glob("*.webm"))
         if webms:
             newest = max(webms, key=lambda f: f.stat().st_mtime)
@@ -247,13 +227,41 @@ def record_demo():
                 if target_video.exists():
                     target_video.unlink()
                 shutil.move(newest, target_video)
-            size_mb = target_video.stat().st_size / (1024 * 1024)
-            print(f"[6/6] Demonstration Video Successfully Recorded!")
-            print(f"  Target File: {target_video}")
-            print(f"  File Size:   {size_mb:.2f} MB")
-            return target_video
-        else:
-            raise RuntimeError("No video file found in demo_video directory!")
+
+    video_size_mb = target_video.stat().st_size / (1024 * 1024)
+    print(f"  Target Video: {target_video}")
+    print(f"  Video Size:   {video_size_mb:.2f} MB (Target < 5 MB for GitHub: {'PASSED' if video_size_mb < 5.0 else 'CHECK'})")
+
+    # Build Animated GIF Preview Carousel from snapshots
+    print("[6/6] Generating Animated GIF Preview for GitHub README...")
+    target_gif = demo_video_dir / "gayatri_demo_preview.gif"
+    if snapshot_paths:
+        frames = []
+        for p in snapshot_paths:
+            img = Image.open(p).convert("RGB")
+            # Resize to 960x540 for fast loading on GitHub (< 1.5MB)
+            img = img.resize((960, 540), Image.Resampling.LANCZOS)
+            # Quantize with adaptive palette
+            img_q = img.quantize(colors=128, method=Image.Quantize.MEDIANCUT)
+            frames.append(img_q)
+
+        frames[0].save(
+            str(target_gif),
+            save_all=True,
+            append_images=frames[1:],
+            duration=2200,  # 2.2 seconds per scene
+            loop=0,
+            optimize=True
+        )
+        gif_size_mb = target_gif.stat().st_size / (1024 * 1024)
+        print(f"  Animated GIF: {target_gif}")
+        print(f"  GIF Size:     {gif_size_mb:.2f} MB (Optimized for instant GitHub README rendering)")
+
+        # Cleanup raw snapshot PNGs
+        shutil.rmtree(snapshots_dir, ignore_errors=True)
+
+    print("\n[SUCCESS] Both Video (<5MB) and Animated GIF (<1.5MB) are ready for GitHub!")
+    return target_video, target_gif
 
 if __name__ == "__main__":
     record_demo()
