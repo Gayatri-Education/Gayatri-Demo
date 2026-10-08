@@ -125,10 +125,13 @@ Upload custom syllabus notes or lecture handouts (PDF/DOCX/TXT). The platform ex
 
 ---
 
-## 🛡️ Security, Privacy & Antivirus Posture
+## 🛡️ Security, Privacy & Anti-Reverse Engineering Posture
 
 - **Microsoft Defender Verified:** Clean scan completed on release distribution using `MpCmdRun.exe` (0 threats detected).
-- **No Packers (No UPX):** Uncompressed, standard PE executables prevent heuristic antivirus false positives.
+- **No Binary Packers (No UPX):** Standard PE executables prevent heuristic antivirus false positives.
+- **Compiled PE Runtime:** All application logic is compiled into standalone native PE binaries; zero loose Python `.py` source code files are included in the distribution bundle.
+- **Encapsulated Binary Curriculum Container:** Institutional syllabi, knowledge cards, and concept graphs are compiled and compressed into an obfuscated binary container (`courses.dat`), eliminating raw JSON card exposure.
+- **Bytecode Stripping (-OO):** Python docstrings, assertions, and symbol annotations are stripped during release compilation.
 - **Loopback Only:** Internal communication binds strictly to `127.0.0.1`, avoiding Windows Defender Firewall prompts.
 - **SmartScreen Transparency:** New releases accumulate publisher reputation over time. Verify hashes via `SHA256SUMS.txt`.
 - Complete audit report available in [`docs/SECURITY_AND_TRUST.md`](docs/SECURITY_AND_TRUST.md).

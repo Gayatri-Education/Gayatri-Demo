@@ -7,22 +7,52 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from central_platform.models.schema import Course, Module
-from core.config import COURSES_DIR
+from core.config import COURSES_DIR, COURSES_CONTAINER_FILE
 
 logger = logging.getLogger("gayatri.central_platform.courses")
 
 class CourseService:
     """Manages course catalogs, module dependencies, and course switching."""
 
-    def __init__(self, courses_dir: Optional[Path] = None) -> None:
+    def __init__(self, courses_dir: Optional[Path] = None, container_file: Optional[Path] = None) -> None:
         self.courses_dir = courses_dir or COURSES_DIR
+        self.container_file = container_file or COURSES_CONTAINER_FILE
         self._courses: Dict[str, Course] = {}
         self.reload_courses()
 
     def reload_courses(self) -> None:
-        """Loads all courses from the course data directory."""
+        """Loads all courses from binary container or course directory."""
         self._courses.clear()
-        if not self.courses_dir.exists():
+
+        # 1. Try binary container first
+        if self.container_file and self.container_file.exists():
+            try:
+                from central_platform.courses.packer import load_curriculum_container
+                bundle = load_curriculum_container(self.container_file)
+                for folder_name, data in bundle.items():
+                    c_data = data.get("course")
+                    if not c_data:
+                        continue
+                    modules = [Module(**m) for m in data.get("modules", [])]
+                    course = Course(
+                        id=c_data["id"],
+                        code=c_data.get("code", ""),
+                        title=c_data["title"],
+                        description=c_data.get("description", ""),
+                        modules=modules,
+                        is_active=c_data.get("is_active", True),
+                        is_optional=c_data.get("is_optional", False)
+                    )
+                    self._courses[course.id] = course
+                    if folder_name != course.id:
+                        self._courses[folder_name] = course
+                logger.info("Loaded %d courses from binary container: %s", len(bundle), self.container_file)
+                return
+            except Exception as exc:
+                logger.warning("Failed loading courses.dat, falling back to directory: %s", exc)
+
+        # 2. Fall back to raw directory
+        if not self.courses_dir or not self.courses_dir.exists():
             return
 
         for course_folder in self.courses_dir.iterdir():

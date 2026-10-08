@@ -6,10 +6,14 @@ import sys
 from pathlib import Path
 
 # Paths
-BASE_DIR = Path(__file__).resolve().parent.parent
+if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+    BASE_DIR = Path(sys._MEIPASS)
+else:
+    BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = Path(os.environ.get("GAYATRI_DATA_DIR", BASE_DIR / "data"))
 DEMO_DATA_DIR = BASE_DIR / "demo_data"
 COURSES_DIR = DEMO_DATA_DIR / "courses"
+COURSES_CONTAINER_FILE = DEMO_DATA_DIR / "courses.dat"
 UPLOADS_DIR = DEMO_DATA_DIR / "uploads"
 
 # Application Metadata

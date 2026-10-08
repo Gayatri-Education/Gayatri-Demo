@@ -44,10 +44,14 @@ The objective of v4.0.0 is to prove to university vice-chancellors, deans, and I
 - **Teacher Copilot:** Class-level mastery heatmaps, cohort misconception alerts, and intervention tracking.
 - **Institution Admin:** Course catalog management, knowledge indexing metrics, and air-gapped security status.
 
-### 7. Security Hardening & Windows Antivirus Trust
+### 7. Security Hardening & Anti-Reverse Engineering
 - **Zero Telemetry / Air-Gapped:** Operates 100% offline with zero outbound network egress.
 - **Strict Loopback Binding:** Local service binds exclusively to `127.0.0.1`, eliminating Windows Firewall prompts.
-- **No Binary Packers:** Built with `upx=False` to prevent heuristic antivirus false positives.
+- **No Binary Packers (No UPX):** Built with `upx=False` to prevent heuristic antivirus false positives.
+- **Compiled PE Executable Distribution:** Standalone native Windows binary with zero loose `.py` source code distributed.
+- **Bytecode Stripping (-OO):** Python `-OO` optimization strips asserts, docstrings, variable annotations, and debugging metadata.
+- **Encapsulated Binary Curriculum Container:** Institutional course definitions and knowledge cards compiled into masked container (`courses.dat`) with magic header `GYTR_CRSE_v4` and zlib compression. Zero plaintext JSON cards in release distribution.
+- **In-Memory Dynamic Hydration:** RAG indexes and knowledge structures hydrate directly in RAM without writing decrypted cards to disk.
 - **Microsoft Defender Verified:** Clean scan completed on release distribution using `MpCmdRun.exe` (0 threats detected).
 
 ---
@@ -60,5 +64,5 @@ The objective of v4.0.0 is to prove to university vice-chancellors, deans, and I
 
 ---
 
-## 🏛️ Provenance
-Built from authoritative platform reference `Gayatri-Education/Gayatri` at commit `eee87194be0e69fa0f11923d2a59869f0f215816` adhering to `DEMO_RELEASE_CONTRACT.md` (SHA-256: `F1703332F2E19D590AA24D800B57F06870A7C5EEC522B51C9F94EA37B94A3BF8`).
+## 🏛️ Program Attribution & Release Reference
+Developed under the **Dbert Internship Program** ([dbert.online](https://dbert.online)). Adheres strictly to `DEMO_RELEASE_CONTRACT.md` (SHA-256: `F1703332F2E19D590AA24D800B57F06870A7C5EEC522B51C9F94EA37B94A3BF8`).

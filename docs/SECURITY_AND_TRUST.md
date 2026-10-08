@@ -35,24 +35,37 @@ Previous legacy releases (v3.x) encountered false-positive warnings from heurist
 
 ---
 
-## 3. Microsoft SmartScreen Reputation Guidance
+## 3. Anti-Reverse Engineering & Intellectual Property Protection
 
-Per current Microsoft documentation ([SmartScreen Reputation for Windows App Developers](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartscreen-reputation)):
+Enterprise deployments often require preventing reverse engineering of proprietary pedagogical rules, internal system prompts, and institutional curriculum content. Gayatri v4.0.0 implements an anti-reverse engineering pipeline:
+
+1. **Native PE Executable Distribution:** All application logic is compiled into standard Windows PE binaries. Zero loose Python source code (`.py`) files are distributed within the release package.
+2. **Bytecode Stripping & Optimization:** The PyInstaller build specification compiles with `-OO` optimization, stripping Python docstrings, asserts, variable annotations, and debug symbol metadata.
+3. **Encapsulated Binary Curriculum Container:** Institutional course packages, knowledge cards, and syllabus definitions are compiled into an obfuscated and compressed container (`demo_data/courses.dat`) featuring magic-header verification (`GYTR_CRSE_v4`), byte masking, and zlib compression. Loose plaintext JSON cards are eliminated from release packages.
+4. **Volatile In-Memory Loading:** Knowledge graphs and RAG indices are hydrated directly in volatile RAM without staging temporary plaintext files to the filesystem.
+5. **Automated Pipeline Audit:** The release build pipeline (`scripts/build_demo.py`) includes strict automated assertions that inspect the generated release bundle and abort the build if any loose `.py` source file or plaintext JSON curriculum card is detected.
+
+---
+
+## 4. Microsoft SmartScreen Reputation Guidance
+
+Per current Microsoft documentation ([SmartScreen Reputation for Windows App Developers](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartScreen-reputation)):
 - SmartScreen evaluates both digital signature publisher reputation and individual file hash reputation.
 - Brand-new public software releases may display an unrecognized application notice initially until reputation accumulates across downloads.
 - Gayatri provides cryptographic SHA-256 checksums in `SHA256SUMS.txt` allowing administrators to verify binary integrity independently before execution.
 
 ---
 
-## 4. Verification Commands for Evaluators
+## 5. Verification Commands for Evaluators
 
 ```powershell
 # 1. Verify SHA-256 Checksum
 Get-FileHash -Path .\dist\Gayatri_Adaptive_Learning_Platform_v4.0.0_Portable.zip -Algorithm SHA256
 
 # 2. Run Microsoft Defender Scan
-& "C:\ProgramData\Microsoft\Windows Defender\Platform\*\MpCmdRun.exe" -Scan -ScanType 3 -File .\dist
+$mp = (Get-ChildItem -Path "C:\ProgramData\Microsoft\Windows Defender\Platform" -Filter "MpCmdRun.exe" -Recurse | Select-Object -First 1).FullName
+& $mp -Scan -ScanType 3 -File .\dist
 
-# 3. Verify Offline / Air-Gapped Mode
-pytest tests/security/test_network_audit.py -v
+# 3. Verify Offline / Air-Gapped Mode & Zero Reverse Engineering Leakage
+pytest tests/ -v
 ```

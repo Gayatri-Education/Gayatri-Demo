@@ -13,7 +13,7 @@ from typing import Dict, List, Optional, Set
 from central_platform.models.schema import RAGChunk
 from central_platform.rag.parsers import DocumentParserRouter
 from central_platform.rag.security import RAGSecuritySanitizer
-from core.config import COURSES_DIR, DEFAULT_CHUNK_SIZE, MAX_CHUNKS_PER_DOCUMENT, RAG_TOP_K
+from core.config import COURSES_DIR, COURSES_CONTAINER_FILE, DEFAULT_CHUNK_SIZE, MAX_CHUNKS_PER_DOCUMENT, RAG_TOP_K
 
 logger = logging.getLogger("gayatri.central_platform.rag")
 
@@ -84,8 +84,9 @@ class BM25Retriever:
 class RAGService:
     """Manages course-partitioned knowledge indices and document ingestion."""
 
-    def __init__(self, courses_dir: Optional[Path] = None) -> None:
+    def __init__(self, courses_dir: Optional[Path] = None, container_file: Optional[Path] = None) -> None:
         self.courses_dir = courses_dir or COURSES_DIR
+        self.container_file = container_file or COURSES_CONTAINER_FILE
         self._course_indices: Dict[str, BM25Retriever] = {}
         self._course_chunks: Dict[str, List[RAGChunk]] = {}
         self._id_alias: Dict[str, str] = {}
@@ -97,7 +98,37 @@ class RAGService:
         self._course_chunks.clear()
         self._id_alias.clear()
 
-        if not self.courses_dir.exists():
+        # 1. Try binary container first
+        if self.container_file and self.container_file.exists():
+            try:
+                from central_platform.courses.packer import load_curriculum_container
+                bundle = load_curriculum_container(self.container_file)
+                for folder_name, data in bundle.items():
+                    c_data = data.get("course") or {}
+                    course_id = c_data.get("id", folder_name)
+
+                    self._id_alias[folder_name] = course_id
+                    self._id_alias[course_id] = course_id
+
+                    chunks: List[RAGChunk] = []
+                    for item in data.get("cards", []):
+                        item_copy = dict(item)
+                        item_copy["course_id"] = course_id
+                        chunks.append(RAGChunk(**item_copy))
+
+                    retriever = BM25Retriever(chunks)
+                    self._course_chunks[course_id] = chunks
+                    self._course_indices[course_id] = retriever
+                    if folder_name != course_id:
+                        self._course_chunks[folder_name] = chunks
+                        self._course_indices[folder_name] = retriever
+                logger.info("Loaded %d courses into RAG from binary container: %s", len(bundle), self.container_file)
+                return
+            except Exception as exc:
+                logger.warning("Failed loading courses.dat into RAG, falling back to directory: %s", exc)
+
+        # 2. Fall back to raw directory
+        if not self.courses_dir or not self.courses_dir.exists():
             return
 
         for course_folder in self.courses_dir.iterdir():
