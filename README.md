@@ -4,6 +4,7 @@
   <img src="gai3.png" alt="Gayatri AI Logo" width="130" />
   <h3>Course-Independent Socratic Tutoring Grounded in Institution Knowledge</h3>
   <p><b>A Comprehensive Institutional Demonstration Release (v4.0.0)</b></p>
+  <p><i>This project has been developed under Dbert Internship Program. (<a href="https://dbert.online">dbert.online</a>)</i></p>
 
   <p>
     <a href="#-release-artifacts"><img src="https://img.shields.io/badge/Release-v4.0.0%20Platform%20Edition-e94560.svg" alt="Release v4.0.0" /></a>
@@ -38,6 +39,25 @@ Gayatri solves this through localized, course-independent neural and symbolic in
 | **MATH201** | **Engineering Mathematics** | 4 Modules (ODEs, Laplace, Fourier, Linear Algebra) | 30+ Concept Cards & Formulas | **Primary Core** |
 | **EC202** | **Digital Electronics** | 4 Modules (Number Systems, Boolean, Logic Gates, Flip-Flops) | 35+ Concept Cards & Truth Tables | **Primary Core** |
 | **CHEM101** | **Senior Secondary Chemistry** | 2 Modules (Thermodynamics, Molecular Bonding) | Legacy NCERT Concept Cards | *Optional Showcase* |
+
+---
+
+## 🎥 Captioned Demonstration Video
+
+A comprehensive, high-definition (1080p) demonstration video with on-screen dynamic captions walking through all key institutional capabilities is included in the repository:
+
+- 🎬 **Video File:** [`demo_video/gayatri_v4_platform_demo.webm`](demo_video/gayatri_v4_platform_demo.webm)
+- ⚙️ **Automated Recording Script:** [`scripts/record_demo_video.py`](scripts/record_demo_video.py) (Playwright Track A automation)
+
+The demonstration showcases:
+1. **Platform Vision & Air-Gapped Security** (Offline architecture, loopback-only binding).
+2. **Multi-Course Catalog Navigation** (Engineering Mathematics & Digital Electronics).
+3. **Scoped Socratic Tutoring & RAG Grounding** (Interactive ODE query & Retrieved Evidence Drawer).
+4. **Dynamic Course Switching & Context Isolation** (Zero cross-course knowledge leakage).
+5. **Real-Time Misconception Diagnosis** (Detection of NAND Logic Inversion Error & guided remediation).
+6. **Student Cognitive Mastery Tracking** (Topic-level competency breakdown & trajectory updates).
+7. **Teacher Copilot & Cohort Health Alerts** (Misconception distribution & intervention queue).
+8. **Bring Your Curriculum Ingestion Sandbox** (Dynamic indexing of syllabus documents).
 
 ---
 
@@ -77,9 +97,10 @@ Upload custom syllabus notes or lecture handouts (PDF/DOCX/TXT). The platform ex
 
 ---
 
-## 🔗 Authoritative Source Reference
+## 🎓 Program Attribution & Release Reference
 
-This demonstration repository is produced and maintained by **Gayatri Education**.
-- **Platform Engineering Source:** [Gayatri-Education/Gayatri](https://github.com/Gayatri-Education/Gayatri)
+This project has been developed under the **Dbert Internship Program** ([dbert.online](https://dbert.online)).
+
 - **Authoritative Release Contract:** `DEMO_RELEASE_CONTRACT.md` (Commit: `eee87194be0e69fa0f11923d2a59869f0f215816`)
 - **Release Documentation:** See [`RELEASE_NOTES_v4.0.0.md`](RELEASE_NOTES_v4.0.0.md) and [`INSTITUTION_DEMO_GUIDE.md`](INSTITUTION_DEMO_GUIDE.md).
+- **Demonstration Walkthrough Video:** Available in [`demo_video/`](demo_video/).

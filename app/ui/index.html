@@ -221,6 +221,53 @@
     .stat-card { background: #16213e; border: 1px solid #1f2847; border-radius: 12px; padding: 16px; }
     .stat-val { font-size: 24px; font-weight: 700; color: #f8fafc; margin-top: 6px; }
     .stat-lbl { font-size: 12px; color: #94a3b8; }
+
+    /* Demonstration Video Caption Bar Overlay */
+    .demo-caption-bar {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(56, 189, 248, 0.6);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), 0 0 16px rgba(56, 189, 248, 0.3);
+      border-radius: 9999px;
+      padding: 10px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 10000;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(12px);
+      max-width: 85%;
+    }
+    .demo-caption-bar.hidden {
+      opacity: 0;
+      transform: translate(-50%, 20px);
+      pointer-events: none;
+    }
+    .caption-pulse {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 10px #38bdf8;
+      animation: pulseGlow 1.5s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.3; transform: scale(0.85); }
+    }
+    .caption-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f8fafc;
+      letter-spacing: 0.3px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -321,7 +368,7 @@
             </div>
             <div class="chat-input-bar">
               <input type="text" class="chat-input" id="chatInput" placeholder="Ask a question or provide your reasoning..." onkeypress="handleKey(event)">
-              <button class="btn-primary" onclick="sendMessage()">Send</button>
+              <button class="btn-primary" id="chatSendBtn" onclick="sendMessage()">Send</button>
             </div>
           </div>
 
@@ -493,13 +540,18 @@
       currentCourseId = courseId;
       const c = coursesData.find(x => x.id === courseId);
       if (c) {
-        document.getElementById('headerCourseName').innerText = c.title;
-        document.getElementById('chatCourseTitle').innerText = c.title;
-        document.getElementById('welcomeCourseName').innerText = c.title;
+        const hcn = document.getElementById('headerCourseName');
+        if (hcn) hcn.innerText = c.title;
+        const cct = document.getElementById('chatCourseTitle');
+        if (cct) cct.innerText = c.title;
+        const wcn = document.getElementById('welcomeCourseName');
+        if (wcn) wcn.innerText = c.title;
+        const valSub = document.getElementById('valSubject');
+        if (valSub) valSub.innerText = c.code;
       }
       renderCourses();
       clearChat();
-      if (window.bridge) {
+      if (window.bridge && typeof window.bridge.switchCourse === 'function') {
         window.bridge.switchCourse(courseId);
       }
       switchNav('tutor');
@@ -519,13 +571,19 @@
       appendMsg(text, 'user');
 
       // Call bridge or fallback
-      if (window.bridge) {
-        window.bridge.sendQuery(text, 'demo_student', function(resStr) {
+      if (window.bridge && typeof window.bridge.sendQuery === 'function') {
+        const ret = window.bridge.sendQuery(text, 'demo_student', function(resStr) {
           try {
-            const res = JSON.parse(resStr);
+            const res = typeof resStr === 'string' ? JSON.parse(resStr) : resStr;
             renderTutorResponse(res);
           } catch(e) {}
         });
+        if (ret && typeof ret.then === 'function') {
+          ret.then(resStr => {
+            const res = typeof resStr === 'string' ? JSON.parse(resStr) : resStr;
+            renderTutorResponse(res);
+          });
+        }
       } else {
         // Fallback for standalone demo inspection
         setTimeout(() => {
@@ -534,11 +592,33 @@
       }
     }
 
+function setDemoCaption(text) {
+      const bar = document.getElementById('demo-caption-bar');
+      const txt = document.getElementById('demo-caption-text');
+      if (!bar || !txt) return;
+      if (!text) {
+        bar.classList.add('hidden');
+      } else {
+        txt.innerText = text;
+        bar.classList.remove('hidden');
+      }
+    }
+
+    function formatMarkdown(text) {
+      if (!text) return '';
+      return text
+        .replace(/^### (.*$)/gim, '<h4 style="margin: 8px 0 4px 0; color: #38bdf8; font-size: 14px;">$1</h4>')
+        .replace(/^## (.*$)/gim, '<h3 style="margin: 10px 0 4px 0; color: #38bdf8; font-size: 15px;">$1</h3>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>');
+    }
+
     function appendMsg(text, sender) {
       const box = document.getElementById('chatMessages');
       const msg = document.createElement('div');
       msg.className = 'msg msg-' + sender;
-      msg.innerHTML = text.replace(/\n/g, '<br>');
+      msg.innerHTML = formatMarkdown(text);
       box.appendChild(msg);
       box.scrollTop = box.scrollHeight;
     }
@@ -568,7 +648,10 @@
       }
 
       if (res.misconception) {
-        document.getElementById('valMisconceptions').innerText = res.misconception;
+        const valMisc = document.getElementById('valMisconceptions');
+        if (valMisc) valMisc.innerText = res.misconception;
+        const valAct = document.getElementById('valAction');
+        if (valAct) valAct.innerText = "Remediate Logic Inversion";
       }
     }
 
@@ -619,5 +702,11 @@
       renderCourses();
     };
   </script>
+
+  <!-- Demo Video Dynamic Caption Overlay -->
+  <div id="demo-caption-bar" class="demo-caption-bar hidden">
+    <div class="caption-pulse"></div>
+    <div id="demo-caption-text" class="caption-text">Platform Initialized</div>
+  </div>
 </body>
 </html>
