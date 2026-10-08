@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gayatri — AI-Powered Adaptive Learning Platform</title>
+  <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -267,6 +268,42 @@
       letter-spacing: 0.3px;
       text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
       white-space: nowrap;
+    }
+
+    @media (max-width: 1100px) {
+      .workspace { padding: 18px; }
+      .sidebar { width: 190px; }
+      .chat-layout { flex-direction: column; }
+      .chat-main { min-height: 420px; }
+      .evidence-drawer { width: 100%; max-height: 260px; }
+      .stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #tab-welcome > div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
+    }
+
+    @media (max-width: 700px) {
+      .titlebar { padding: 0 8px; }
+      .titlebar-brand { gap: 6px; font-size: 11px; }
+      .active-course-badge { max-width: 42vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .sidebar { width: 64px; padding: 10px 6px; }
+      .nav-group-title, .nav-btn span:not(.nav-badge), .nav-badge { display: none; }
+      .nav-btn { justify-content: center; padding: 12px 6px; font-size: 18px; }
+      .workspace { padding: 12px; }
+      .hero-card { padding: 20px; }
+      .hero-title { font-size: 22px; }
+      .hero-buttons { flex-wrap: wrap; }
+      .course-grid { grid-template-columns: minmax(0, 1fr); }
+      .stats-row { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+      .chat-main { min-height: 360px; }
+      .msg { max-width: 96%; padding: 11px 13px; }
+      .chat-input-bar { padding: 9px; }
+      .chat-input { min-width: 0; }
+      .demo-caption-bar { max-width: calc(100% - 24px); padding: 8px 14px; }
+      .caption-text { font-size: 12px; white-space: normal; }
+    }
+
+    @media (max-height: 650px) {
+      .workspace { padding-top: 12px; padding-bottom: 12px; }
+      .chat-main { min-height: 300px; }
     }
   </style>
 </head>
@@ -582,7 +619,7 @@
           <div style="font-size: 32px; margin-bottom: 12px;">📄</div>
           <div style="font-size: 16px; font-weight: 600; margin-bottom: 6px;">Upload Syllabus or Lecture Notes</div>
           <div style="font-size: 13px; color: #94a3b8; margin-bottom: 16px;">Supports PDF, DOCX, TXT, and Markdown (Max 5 MB)</div>
-          <button class="btn-primary" onclick="simulateIngest()">Load Sample Curriculum Document</button>
+          <button class="btn-primary" onclick="uploadCurriculum()">Select a Curriculum File</button>
           <div id="ingestStatus" style="margin-top: 14px; font-size: 13px; color: #27c93f;"></div>
         </div>
       </div>
@@ -599,6 +636,7 @@
       if (target) target.classList.add('active');
       if (btn) btn.classList.add('active');
       if (tabId === 'courses') renderCourses();
+      if (tabId === 'progress') refreshAnalytics();
     }
 
     // Default courses fallback data
@@ -652,6 +690,7 @@
       clearChat();
       if (window.bridge && typeof window.bridge.switchCourse === 'function') {
         window.bridge.switchCourse(courseId);
+        refreshAnalytics(courseId);
       }
       switchNav('tutor');
     }
@@ -675,12 +714,14 @@
           try {
             const res = typeof resStr === 'string' ? JSON.parse(resStr) : resStr;
             renderTutorResponse(res);
+            refreshAnalytics(currentCourseId);
           } catch(e) {}
         });
         if (ret && typeof ret.then === 'function') {
           ret.then(resStr => {
             const res = typeof resStr === 'string' ? JSON.parse(resStr) : resStr;
             renderTutorResponse(res);
+            refreshAnalytics(currentCourseId);
           });
         }
       } else {
@@ -776,11 +817,75 @@ function setDemoCaption(text) {
       document.getElementById('groundingBadge').style.display = 'none';
     }
 
-    function simulateIngest() {
-      document.getElementById('ingestStatus').innerText = "Parsing and indexing sample curriculum...";
-      setTimeout(() => {
-        document.getElementById('ingestStatus').innerText = "✓ Successfully indexed 3 knowledge cards into Custom Curriculum!";
-      }, 700);
+    function refreshAnalytics(courseId = currentCourseId) {
+      if (!window.bridge || typeof window.bridge.getAnalytics !== 'function') return;
+      window.bridge.getAnalytics(courseId, 'demo_student', function(payload) {
+        try {
+          const state = typeof payload === 'string' ? JSON.parse(payload) : payload;
+          document.getElementById('valMastery').innerText = `${Math.round(state.overall_mastery * 100)}%`;
+          const course = coursesData.find(item => item.id === courseId);
+          document.getElementById('valSubject').innerText = course ? course.code : courseId;
+          document.getElementById('valMisconceptions').innerText = `${(state.recent_misconceptions || []).length} Detected`;
+          document.getElementById('valAction').innerText = state.recommended_next_action || 'Continue guided practice';
+
+          const breakdown = document.getElementById('masteryBreakdown');
+          breakdown.replaceChildren();
+          const topics = Object.entries(state.topic_mastery || {});
+          if (topics.length === 0) {
+            const empty = document.createElement('p');
+            empty.innerText = 'No topic-level mastery data yet.';
+            breakdown.appendChild(empty);
+          }
+          topics.forEach(([topic, score]) => {
+            const row = document.createElement('div');
+            const label = document.createElement('div');
+            label.style.cssText = 'display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;';
+            const name = document.createElement('span');
+            name.innerText = topic;
+            const value = document.createElement('span');
+            value.innerText = `${Math.round(score * 100)}%`;
+            label.append(name, value);
+            const track = document.createElement('div');
+            track.style.cssText = 'height:6px;background:#0f172a;border-radius:3px;overflow:hidden;';
+            const bar = document.createElement('div');
+            bar.style.cssText = `width:${Math.max(0, Math.min(100, score * 100))}%;height:100%;background:#27c93f;`;
+            track.appendChild(bar);
+            row.append(label, track);
+            breakdown.appendChild(row);
+          });
+        } catch (error) {
+          console.error('Could not render mastery analytics:', error);
+        }
+      });
+    }
+
+    function uploadCurriculum() {
+      const status = document.getElementById('ingestStatus');
+      if (!window.bridge || typeof window.bridge.selectAndUploadCurriculum !== 'function') {
+        status.style.color = '#f5c542';
+        status.innerText = 'Curriculum upload is available in the desktop app.';
+        return;
+      }
+
+      status.style.color = '#94a3b8';
+      status.innerText = 'Choose a local curriculum document to index...';
+      window.bridge.selectAndUploadCurriculum(currentCourseId, function(payload) {
+        try {
+          const result = typeof payload === 'string' ? JSON.parse(payload) : payload;
+          if (result.cancelled) {
+            status.innerText = 'Upload cancelled.';
+          } else if (result.success) {
+            status.style.color = '#27c93f';
+            status.innerText = `Indexed ${result.chunks_indexed} cards from ${result.filename} into ${currentCourseId}.`;
+          } else {
+            status.style.color = '#e94560';
+            status.innerText = result.message || 'The document could not be indexed.';
+          }
+        } catch (error) {
+          status.style.color = '#e94560';
+          status.innerText = 'The upload result could not be read.';
+        }
+      });
     }
 
     function startGuidedShowcase() {
@@ -799,6 +904,28 @@ function setDemoCaption(text) {
     // Init WebChannel
     window.onload = function() {
       renderCourses();
+      if (typeof QWebChannel !== 'undefined' && typeof qt !== 'undefined') {
+        new QWebChannel(qt.webChannelTransport, function(channel) {
+          window.bridge = channel.objects.bridge;
+          window.bridge.listCourses(function(payload) {
+            try {
+              coursesData = typeof payload === 'string' ? JSON.parse(payload) : payload;
+              const initialCourse = coursesData.find(course => course.code === 'MATH201') || coursesData[0];
+              if (initialCourse) {
+                currentCourseId = initialCourse.id;
+                document.getElementById('headerCourseName').innerText = initialCourse.title;
+                document.getElementById('chatCourseTitle').innerText = initialCourse.title;
+                document.getElementById('welcomeCourseName').innerText = initialCourse.title;
+                document.getElementById('valSubject').innerText = initialCourse.code;
+                renderCourses();
+                refreshAnalytics(currentCourseId);
+              }
+            } catch (error) {
+              console.error('Could not load courses from the desktop bridge:', error);
+            }
+          });
+        });
+      }
     };
   </script>
 

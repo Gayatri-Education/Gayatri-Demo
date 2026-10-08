@@ -36,6 +36,8 @@ data/**/*.db
 data/uploads/
 logs/
 models/
+!/central_platform/models/
+!/central_platform/models/**
 *.db
 *.sqlite
 *.sqlite3
