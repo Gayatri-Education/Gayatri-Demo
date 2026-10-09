@@ -14,7 +14,10 @@ def test_zero_hardcoded_secrets_and_api_keys():
     ]
 
     target_extensions = {".py", ".json", ".md", ".iss", ".spec", ".txt"}
-    excluded_dirs = {".git", ".pytest_cache", "build", "dist", "archive"}
+    excluded_dirs = {
+        ".git", ".pytest_cache", ".venv", "venv", "env", "site-packages",
+        "__pycache__", "build", "dist", "archive"
+    }
 
     scanned_count = 0
     for file_path in BASE_DIR.rglob("*"):

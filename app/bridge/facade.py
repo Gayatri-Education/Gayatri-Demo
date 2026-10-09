@@ -127,6 +127,31 @@ class BridgeFacade(QObject):
         ok, msg, count = self.rag_service.ingest_document(p, course_id)
         return json.dumps({"success": ok, "message": msg, "chunks_indexed": count})
 
+    @Slot(str, result=str)
+    def selectAndUploadCurriculum(self, course_id: str) -> str:
+        """Lets the user choose a local curriculum file and indexes it."""
+        from PySide6.QtWidgets import QFileDialog
+
+        file_path, _ = QFileDialog.getOpenFileName(
+            self.window,
+            "Select Curriculum Document",
+            "",
+            "Curriculum files (*.pdf *.docx *.txt *.md)",
+        )
+        if not file_path:
+            return json.dumps({"success": False, "cancelled": True, "message": "Upload cancelled", "chunks_indexed": 0})
+
+        from pathlib import Path
+        path = Path(file_path)
+        ok, message, count = self.rag_service.ingest_document(path, course_id)
+        return json.dumps({
+            "success": ok,
+            "cancelled": False,
+            "message": message,
+            "chunks_indexed": count,
+            "filename": path.name,
+        })
+
     # Window Control Slots
     @Slot()
     def minimizeWindow(self) -> None:
