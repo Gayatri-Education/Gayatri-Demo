@@ -94,9 +94,17 @@ class LearningStateManager:
                     current.recent_misconceptions.append(event.misconception)
                 current.overall_mastery = max(0.1, round(current.overall_mastery - 0.05, 2))
                 current.recommended_next_action = f"Remediate: {event.misconception}"
-            else:
+            elif event.correctness is True:
                 current.overall_mastery = min(1.0, round(current.overall_mastery + 0.05, 2))
                 current.recommended_next_action = "Advance to Next Topic"
+            elif event.correctness is False:
+                current.overall_mastery = max(0.1, round(current.overall_mastery - 0.05, 2))
+                current.recommended_next_action = "Review the current topic"
+            else:
+                # Asking a question or submitting an ungraded response is not
+                # evidence of learning. Keep mastery unchanged until an answer
+                # has actually been evaluated.
+                current.recommended_next_action = "Continue guided practice"
 
             cursor.execute("""
                 INSERT OR REPLACE INTO mastery 
