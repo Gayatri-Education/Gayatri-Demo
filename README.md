@@ -116,12 +116,14 @@ Upload custom syllabus notes or lecture handouts (PDF/DOCX/TXT). The platform ex
 
 ---
 
-## 📦 Release Artifacts
+## 📦 Release Artifacts & Execution Paths
+
+- **Supported OS:** Windows 10 (64-bit) & Windows 11 (64-bit). Legacy Windows 7/8 is unsupported.
 
 | Deliverable | Description | Checksum (SHA-256) |
 |---|---|---|
-| `Gayatri_Adaptive_Learning_Platform_v4.0.0_Portable.zip` | Standalone portable bundle. Run `Gayatri_Launcher.bat` or `python -m app.main`. | Verified in `SHA256SUMS.txt` |
-| `Gayatri_Adaptive_Learning_Platform_v4.0.0_Setup.exe` | Windows Inno Setup installer. Installs per-user without admin rights. | Generated via `scripts/build_demo.py` |
+| `Gayatri_Adaptive_Learning_Platform_v4.0.0_Portable.zip` | Standalone portable bundle (**No Python required**). Double-click `Gayatri_Launcher.bat` or `Gayatri.exe`. | Verified in `SHA256SUMS.txt` |
+| Developer Source Checkout | Requires Python 3.10+, pip dependencies. Follow [`GETTING_STARTED_GUIDE.md`](GETTING_STARTED_GUIDE.md) to run `python -m app.main`. | GitHub Repository HEAD |
 
 ---
 

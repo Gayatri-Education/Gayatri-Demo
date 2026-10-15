@@ -16,17 +16,46 @@ from core.logging_setup import setup_logging
 logger = setup_logging()
 
 def check_startup() -> bool:
-    """Verifies runtime dependencies and configuration headlessly."""
+    """Verifies runtime dependencies, platform policy, and configuration headlessly."""
     try:
+        # 1. Python version verification
+        if sys.version_info < (3, 10):
+            sys.stderr.write(
+                f"Startup check failed: Python {sys.version_info.major}.{sys.version_info.minor} is unsupported. "
+                "Gayatri AI requires Python 3.10 or higher for source execution.\n"
+            )
+            return False
+
+        # 2. Operating system warning
+        if sys.platform == "win32":
+            try:
+                win_ver = sys.getwindowsversion()
+                if win_ver.major < 10:
+                    logger.warning(
+                        "Unsupported legacy OS detected: Windows %s.%s. "
+                        "Official support requires Windows 10 or Windows 11 (64-bit). "
+                        "Running on Windows 7/8 may cause Chromium deprecation warnings and rendering issues.",
+                        win_ver.major, win_ver.minor
+                    )
+            except Exception:
+                pass
+
+        # 3. Core dependencies and platform services
         import PySide6.QtWidgets
         import PySide6.QtWebEngineWidgets
         import pydantic
         from central_platform.courses.service import CourseService
+        from central_platform.learning.state import LearningStateManager
         from central_platform.rag.service import RAGService
+        from central_platform.tutor.orchestrator import TutorOrchestrator
         
         cs = CourseService()
         rag = RAGService()
+        sm = LearningStateManager()
+        orch = TutorOrchestrator(cs, rag, sm)
+
         assert len(cs.list_courses()) >= 2
+        assert orch is not None
         return True
     except Exception as exc:
         sys.stderr.write(f"Startup check failed: {exc}\n")
