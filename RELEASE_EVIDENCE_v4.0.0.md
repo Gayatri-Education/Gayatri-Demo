@@ -23,10 +23,10 @@
 ## 2. Test Execution & Quality Evidence
 
 Full automated test suite executed via `pytest -v`:
-- **Total Tests Run:** 67
-- **Passed:** 67
+- **Total Tests Run:** 68
+- **Passed:** 68
 - **Failed:** 0
-- **Execution Time:** ~4.2s
+- **Execution Time:** ~5.1s
 
 ### Layer-by-Layer Verification Breakdown
 - **Course Models & DAGs:** 3/3 passed (`test_course_models.py`)
@@ -70,7 +70,7 @@ Single source of truth matching `SHA256SUMS.txt` and verified package bytes:
 
 | File | Size (Bytes) | SHA-256 Checksum |
 |---|---|---|
-| `Gayatri_Adaptive_Learning_Platform_v4.0.0_Portable.zip` | 259,371,032 | `AF9D42701FA09BD884494AA54874A271E232304ACAF8C1D7E7E928031D4AC32E` |
+| `Gayatri_Adaptive_Learning_Platform_v4.0.0_Portable.zip` | 259,370,450 | `DB5A9FF381F097847CB88C828AE32431078C9C5657F8E301413000F758EBB886` |
 
 ---
 

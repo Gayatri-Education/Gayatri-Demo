@@ -24,12 +24,17 @@ def clean_build_artifacts():
     DIST_DIR.mkdir(parents=True, exist_ok=True)
 
 def compile_curriculum_container():
-    print("[2/6] Compiling institutional curriculum into authenticated cryptographic container (courses.dat)...")
-    from central_platform.courses.packer import compile_curriculum_container, load_curriculum_container, MAGIC_HEADER, CONTAINER_VERSION
+    print("[2/6] Compiling/verifying institutional curriculum in authenticated cryptographic container (courses.dat)...")
+    from central_platform.courses.packer import compile_curriculum_container as compile_fn, load_curriculum_container, MAGIC_HEADER, CONTAINER_VERSION
     courses_dir = DEMO_DATA_DIR / "courses"
     container_file = DEMO_DATA_DIR / "courses.dat"
-    count = compile_curriculum_container(courses_dir, container_file)
-    print(f"      [OK] Compiled {count} courses into {container_file.name} ({container_file.stat().st_size} bytes)")
+    if courses_dir.exists():
+        count = compile_fn(courses_dir, container_file)
+        print(f"      [OK] Compiled {count} courses into {container_file.name} ({container_file.stat().st_size} bytes)")
+    else:
+        assert container_file.exists(), f"Container file {container_file} must exist!"
+        count = len(load_curriculum_container(container_file))
+        print(f"      [OK] Verified existing cryptographic container {container_file.name} ({count} courses, {container_file.stat().st_size} bytes)")
 
     # Immediate self-test of cryptographic container
     raw = container_file.read_bytes()

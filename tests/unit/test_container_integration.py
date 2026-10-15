@@ -1,17 +1,15 @@
 """Unit tests verifying full platform execution from binary container without raw JSON files."""
 import pytest
 from pathlib import Path
-from central_platform.courses.packer import compile_curriculum_container
 from central_platform.courses.service import CourseService
 from central_platform.rag.service import RAGService
 from central_platform.learning.state import LearningStateManager
 from central_platform.tutor.orchestrator import TutorOrchestrator
-from core.config import COURSES_DIR
+from core.config import COURSES_CONTAINER_FILE
 
 def test_full_platform_from_binary_container_only(tmp_path):
-    # 1. Compile real courses into binary container
-    container_file = tmp_path / "courses.dat"
-    compile_curriculum_container(COURSES_DIR, container_file)
+    # 1. Use pre-compiled production binary container
+    container_file = COURSES_CONTAINER_FILE
     assert container_file.exists()
 
     # 2. Point to an EMPTY non-existent courses directory to prove zero reliance on raw files

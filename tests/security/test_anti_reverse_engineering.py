@@ -13,7 +13,7 @@ from central_platform.courses.packer import (
 )
 from central_platform.learning.actions import NextActionEngine, _RAW_MISCONCEPTIONS, _RAW_RUBRICS
 from central_platform.ai.adapters import SocraticInferenceEngine, _RAW_PROMPTS
-from core.config import COURSES_DIR
+from core.config import COURSES_CONTAINER_FILE
 
 def test_obfuscation_codec_integrity():
     text = "Proprietary Socratic Remediation Template v4"
@@ -49,14 +49,30 @@ def test_adapters_prompts_obfuscated_in_code():
     assert "Input A = 0 and Input B = 1" in nand_prompt
 
 def test_container_cryptographic_integrity(tmp_path):
+    mock_courses = tmp_path / "mock_courses"
+    c_folder = mock_courses / "mock_math"
+    c_folder.mkdir(parents=True, exist_ok=True)
+    (c_folder / "course.json").write_text(
+        '{"id": "crs_mock", "code": "MATH999", "title": "Calculus Secure", "is_active": true}',
+        encoding="utf-8"
+    )
+    (c_folder / "modules.json").write_text('[{"id": "mod_01", "title": "Module 1"}]', encoding="utf-8")
+    rag = c_folder / "rag"
+    rag.mkdir(parents=True, exist_ok=True)
+    (rag / "cards.json").write_text(
+        '[{"id": "c1", "title": "Secret Card", "content": "Secret Math Proof", "tags": []}]',
+        encoding="utf-8"
+    )
+
     container_file = tmp_path / "test_secure_courses.dat"
-    count = compile_curriculum_container(COURSES_DIR, container_file)
-    assert count >= 3
+    count = compile_curriculum_container(mock_courses, container_file)
+    assert count == 1
 
     raw = container_file.read_bytes()
     assert raw.startswith(MAGIC_HEADER + CONTAINER_VERSION)
-    assert b"MATH201" not in raw
-    assert b"EC202" not in raw
+    assert b"Calculus Secure" not in raw
+    assert b"Secret Math Proof" not in raw
+    assert b"MATH999" not in raw
 
     # Tamper with encrypted bytes
     tampered = bytearray(raw)

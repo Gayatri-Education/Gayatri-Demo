@@ -92,3 +92,7 @@ PRIVATE_WORK/
 # Local datasets & raw logs
 *.jsonl
 *.csv
+
+# Raw course authoring assets (compiled into authenticated courses.dat)
+demo_data/courses/
+

@@ -817,18 +817,10 @@ function setDemoCaption(text) {
     }
 
     function simulateResponse(text) {
-      if (text.toLowerCase().includes("nand") && text.includes("0")) {
-        renderTutorResponse({
-          message: "⚠️ **Misconception Identified: NAND/NOR Logic Inversion Error**\nRemember that NAND produces 0 ONLY when ALL inputs are 1. If any input is 0, the output is 1.\n\n*Check:* If Input A = 0 and Input B = 1, what does the NAND gate output?",
-          evidence_cards: [{ title: "Universal Logic Gates (NAND and NOR)", content: "A NAND gate yields logic 0 only when ALL inputs are 1." }],
-          misconception: "NAND Logic Inversion Error"
-        });
-      } else {
-        renderTutorResponse({
-          message: `Regarding your query in **${currentCourseId}**: The foundational principles show that solving this step-by-step builds conceptual intuition. What is the first mathematical step?`,
-          evidence_cards: [{ title: "Foundational Topic Principle", content: "Key concept definition and governing equations." }]
-        });
-      }
+      renderTutorResponse({
+        message: "Gayatri desktop runtime connection required for interactive pedagogical inference.",
+        evidence_cards: []
+      });
     }
 
     function clearChat() {
