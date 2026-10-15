@@ -145,6 +145,7 @@ def package_and_sign(bundle_dir: Path):
         shutil.which("iscc"),
         r"C:\Program Files (x86)\Inno Setup 6\iscc.exe",
         r"C:\Program Files\Inno Setup 6\iscc.exe",
+        str(Path(os.environ.get("LOCALAPPDATA", "")) / "Programs" / "Inno Setup 6" / "iscc.exe"),
     ]
     iscc_path = next((c for c in iscc_candidates if c and Path(c).exists()), None)
     if iscc_path:

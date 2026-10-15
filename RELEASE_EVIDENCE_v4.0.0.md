@@ -59,6 +59,7 @@ Full automated test suite executed via `pytest -v`:
   Scan starting...
   Scan finished.
   Scanning c:\Users\user\Desktop\gayatri\Gayatri-Demo\dist found no threats.
+  Scanning c:\Users\user\Desktop\gayatri\Gayatri-Demo\dist\Gayatri_Adaptive_Learning_Platform_v4.0.0_Setup.exe found no threats.
   ```
 - **Malware / PUA Status:** **0 Threats Detected (Clean)**
 
@@ -68,9 +69,10 @@ Full automated test suite executed via `pytest -v`:
 
 Single source of truth matching `SHA256SUMS.txt` and verified package bytes:
 
-| File | Size (Bytes) | SHA-256 Checksum |
-|---|---|---|
-| `Gayatri_Adaptive_Learning_Platform_v4.0.0_Portable.zip` | 259,370,450 | `DB5A9FF381F097847CB88C828AE32431078C9C5657F8E301413000F758EBB886` |
+| File | Size (Bytes) | SHA-256 Checksum | Delivery Type |
+|---|---|---|---|
+| `Gayatri_Adaptive_Learning_Platform_v4.0.0_Setup.exe` | 176,852,764 | `D114903E06CFBFAF997736AE4CF071D37C1A73F8A3349D729F4F4897FA3643F0` | Standalone Windows Installer (Recommended) |
+| `Gayatri_Adaptive_Learning_Platform_v4.0.0_Portable.zip` | 259,370,450 | `DB5A9FF381F097847CB88C828AE32431078C9C5657F8E301413000F758EBB886` | Self-Contained Portable Archive |
 
 ---
 

@@ -122,7 +122,8 @@ Upload custom syllabus notes or lecture handouts (PDF/DOCX/TXT). The platform ex
 
 | Deliverable | Description | Checksum (SHA-256) |
 |---|---|---|
-| `Gayatri_Adaptive_Learning_Platform_v4.0.0_Portable.zip` | Standalone portable bundle (**No Python required**). Double-click `Gayatri_Launcher.bat` or `Gayatri.exe`. | Verified in `SHA256SUMS.txt` |
+| `Gayatri_Adaptive_Learning_Platform_v4.0.0_Setup.exe` | **Recommended:** Standalone Windows installer (**No Python required**). Self-contained single executable setup. | `D114903E06CFBFAF997736AE4CF071D37C1A73F8A3349D729F4F4897FA3643F0` |
+| `Gayatri_Adaptive_Learning_Platform_v4.0.0_Portable.zip` | Standalone portable bundle (**No Python required**). Double-click `Gayatri_Launcher.bat` or `Gayatri.exe`. | `DB5A9FF381F097847CB88C828AE32431078C9C5657F8E301413000F758EBB886` |
 | Developer Source Checkout | Requires Python 3.10+, pip dependencies. Follow [`GETTING_STARTED_GUIDE.md`](GETTING_STARTED_GUIDE.md) to run `python -m app.main`. | GitHub Repository HEAD |
 
 ---
