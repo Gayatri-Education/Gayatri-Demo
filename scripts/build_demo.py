@@ -87,8 +87,14 @@ def package_and_sign(bundle_dir: Path):
         for file in bundle_dir.rglob("*"):
             if file.is_file():
                 zf.write(file, file.relative_to(DIST_DIR))
+
+    with zipfile.ZipFile(zip_path, "r") as test_zf:
+        bad_file = test_zf.testzip()
+        if bad_file:
+            raise RuntimeError(f"Zip corrupted: {bad_file}")
+
     zip_size_mb = zip_path.stat().st_size / (1024 * 1024)
-    print(f"      [OK] Portable bundle created: {zip_path.name} ({zip_size_mb:.2f} MB)")
+    print(f"      [OK] Portable bundle created and verified: {zip_path.name} ({zip_size_mb:.2f} MB)")
 
     # 2. Check for Inno Setup compiler
     iscc_candidates = [

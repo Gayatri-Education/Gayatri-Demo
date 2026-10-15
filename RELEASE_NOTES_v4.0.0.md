@@ -58,8 +58,7 @@ The objective of v4.0.0 is to prove to university vice-chancellors, deans, and I
 
 ## 📦 Package Manifest
 
-- `Gayatri_Adaptive_Learning_Platform_v4.0.0_Portable.zip` (Portable ZIP bundle)
-- `Gayatri_Adaptive_Learning_Platform_v4.0.0_Setup.exe` (Inno Setup Installer)
+- `Gayatri_Adaptive_Learning_Platform_v4.0.0_Portable.zip` (Verified Standalone Portable ZIP bundle, no Python required)
 - `SHA256SUMS.txt` (Cryptographic verification checksums)
 
 ---

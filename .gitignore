@@ -38,6 +38,7 @@ logs/
 models/
 !/central_platform/models/
 !/central_platform/models/**
+central_platform/models/__pycache__/
 *.db
 *.sqlite
 *.sqlite3
