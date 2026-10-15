@@ -1,4 +1,4 @@
-﻿"""Gayatri AI Platform — Model Provider Abstraction with Offline Pedagogical Engine."""
+"""Gayatri AI Platform — Model Provider Abstraction with Offline Pedagogical Engine."""
 from __future__ import annotations
 
 import logging
@@ -16,7 +16,8 @@ class SocraticInferenceEngine:
         user_prompt: str,
         action: PedagogicalAction,
         evidence_cards: List[RAGChunk],
-        misconception_feedback: Optional[str] = None
+        misconception_feedback: Optional[str] = None,
+        evaluation_feedback: Optional[str] = None
     ) -> str:
         """Generates grounded Socratic pedagogical responses."""
         if action == PedagogicalAction.REMEDIATE and misconception_feedback:
@@ -33,6 +34,18 @@ class SocraticInferenceEngine:
                 resp.append("Why does transforming a derivative in time require knowing the state of the system at time $t = 0$?")
             else:
                 resp.append("Can you trace this step-by-step using the foundational definition?")
+            return "".join(resp)
+
+        if action == PedagogicalAction.EVALUATE and evaluation_feedback:
+            resp = [
+                f"### 💡 Pedagogical Evaluation in **{course_title}**\n\n",
+                f"{evaluation_feedback}\n\n",
+                "**Next Step:**\n"
+            ]
+            if evidence_cards:
+                resp.append(f"Refer to **{evidence_cards[0].title}** for deeper principles.")
+            else:
+                resp.append("How would you apply this to related problems in this topic?")
             return "".join(resp)
 
         if evidence_cards:

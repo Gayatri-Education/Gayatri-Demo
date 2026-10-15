@@ -62,6 +62,7 @@ class LearningEvent(BaseModel):
     student_id: str
     course_id: str
     module_id: Optional[str] = None
+    topic_id: Optional[str] = None
     prompt: str
     response: str
     action: PedagogicalAction

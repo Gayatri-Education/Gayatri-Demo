@@ -1,4 +1,4 @@
-﻿"""Gayatri AI Platform — Course-Independent Socratic Tutor Orchestrator."""
+"""Gayatri AI Platform — Course-Independent Socratic Tutor Orchestrator."""
 from __future__ import annotations
 
 import logging
@@ -54,7 +54,17 @@ class TutorOrchestrator:
         grounded = len(evidence_cards) > 0
 
         # 2. Pedagogical Action & Misconception Evaluation
-        action, mis_tag, mis_feedback = NextActionEngine.evaluate_response(user_prompt)
+        eval_result = NextActionEngine.evaluate_turn(
+            prompt=user_prompt,
+            course_id=self.active_course_id,
+            evidence_cards=evidence_cards
+        )
+        action = eval_result.action
+        mis_tag = eval_result.misconception
+        mis_feedback = eval_result.feedback
+        correctness = eval_result.correctness
+        module_id = eval_result.module_id or (evidence_cards[0].module_id if evidence_cards else None)
+        topic_name = eval_result.topic_name or (evidence_cards[0].title if evidence_cards else None)
 
         # 3. Socratic Response Synthesis
         bot_message = SocraticInferenceEngine.generate_socratic_response(
@@ -62,7 +72,8 @@ class TutorOrchestrator:
             user_prompt=user_prompt,
             action=action,
             evidence_cards=evidence_cards,
-            misconception_feedback=mis_feedback
+            misconception_feedback=mis_feedback,
+            evaluation_feedback=eval_result.feedback if correctness is not None else None
         )
 
         # 4. Anti-Answer-Leakage Invariant Check
@@ -76,10 +87,13 @@ class TutorOrchestrator:
             id=f"evt_{uuid.uuid4().hex[:10]}",
             student_id=student_id,
             course_id=self.active_course_id,
+            module_id=module_id,
+            topic_id=topic_name,
             prompt=user_prompt,
             response=bot_message,
             action=action,
-            misconception=mis_tag
+            misconception=mis_tag,
+            correctness=correctness
         )
         self.state_manager.record_event(event)
 
@@ -92,5 +106,5 @@ class TutorOrchestrator:
             grounded=grounded,
             evidence_cards=evidence_cards,
             misconception_identified=mis_tag,
-            recommended_topic=course.modules[0].title if course and course.modules else None
+            recommended_topic=topic_name or (course.modules[0].title if course and course.modules else None)
         )
