@@ -37,13 +37,15 @@ Previous legacy releases (v3.x) encountered false-positive warnings from heurist
 
 ## 3. Anti-Reverse Engineering & Intellectual Property Protection
 
-Enterprise deployments often require preventing reverse engineering of proprietary pedagogical rules, internal system prompts, and institutional curriculum content. Gayatri v4.0.0 implements an anti-reverse engineering pipeline:
+Enterprise deployments often require preventing reverse engineering of proprietary pedagogical rules, internal system prompts, and institutional curriculum content. Gayatri v4.0.0 implements a multi-layer anti-reverse engineering pipeline:
 
 1. **Native PE Executable Distribution:** All application logic is compiled into standard Windows PE binaries. Zero loose Python source code (`.py`) files are distributed within the release package.
-2. **Bytecode Stripping & Optimization:** The PyInstaller build specification compiles with `-OO` optimization, stripping Python docstrings, asserts, variable annotations, and debug symbol metadata.
-3. **Encapsulated Binary Curriculum Container:** Institutional course packages, knowledge cards, and syllabus definitions are compiled into an obfuscated and compressed container (`demo_data/courses.dat`) featuring magic-header verification (`GYTR_CRSE_v4`), byte masking, and zlib compression. Loose plaintext JSON cards are eliminated from release packages.
-4. **Volatile In-Memory Loading:** Knowledge graphs and RAG indices are hydrated directly in volatile RAM without staging temporary plaintext files to the filesystem.
-5. **Automated Pipeline Audit:** The release build pipeline (`scripts/build_demo.py`) includes strict automated assertions that inspect the generated release bundle and abort the build if any loose `.py` source file or plaintext JSON curriculum card is detected.
+2. **Bytecode Stripping & Optimization:** The PyInstaller build specification compiles with `-OO` optimization, stripping Python docstrings, asserts, variable annotations, and debug symbol metadata. Introspection and profiling modules (`pdb`, `trace`, `cProfile`, `profile`, `pstats`, `unittest`, `doctest`) are strictly excluded from the package.
+3. **Authenticated Cryptographic Curriculum Container:** Institutional course packages, knowledge cards, and syllabus definitions are compiled into an authenticated cryptographic container (`demo_data/courses.dat`). The container uses a multi-stage dynamic key reconstruction routine, PBKDF2 (10,000 rounds), HMAC-SHA256 authenticated CTR stream cipher, and tamper-rejection tripwires. Loose plaintext JSON cards are eliminated.
+4. **Proprietary Prompt & Rubric In-Memory Obfuscation:** All Socratic reflection prompts, diagnostic misconception regexes, and answer evaluation rubrics are obfuscated as non-printable byte literals and decoded just-in-time in memory. Static binary string extraction (`strings.exe`, grep) yields zero plaintext pedagogical templates.
+5. **Anti-Debugging & Anti-Analysis Protection:** Runtime guards detect attached debuggers (`IsDebuggerPresent`, `CheckRemoteDebuggerPresent`, `sys.gettrace`) and unauthorized injection flags. Context menus in QtWebEngine are disabled to prevent DevTools element inspection.
+6. **Volatile In-Memory Loading:** Knowledge graphs and RAG indices are hydrated directly in volatile RAM without staging temporary plaintext files to the filesystem.
+7. **Automated Pipeline Audit:** The release build pipeline (`scripts/build_demo.py`) includes strict automated assertions that inspect the generated release bundle, scan for plaintext prompts, verify headless execution, and abort the build if any security boundary is breached.
 
 ---
 

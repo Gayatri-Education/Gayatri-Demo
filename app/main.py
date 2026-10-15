@@ -62,6 +62,10 @@ def check_startup() -> bool:
         return False
 
 def main() -> None:
+    from core.tamper import enforce_runtime_security, sanitize_runtime_arguments
+    sanitize_runtime_arguments()
+    enforce_runtime_security()
+
     # CLI Flags
     if "--version" in sys.argv or "-v" in sys.argv:
         print(f"Gayatri AI v{APP_VERSION}")

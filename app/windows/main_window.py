@@ -50,6 +50,7 @@ class MainWindow(QMainWindow):
 
         # Setup WebEngine & Secure Page
         self.web_view = QWebEngineView()
+        self.web_view.setContextMenuPolicy(Qt.NoContextMenu)
         self.web_page = SecureWebPage()
         self.web_page.setBackgroundColor(QColor("#0f0f23"))
         self.web_view.setPage(self.web_page)

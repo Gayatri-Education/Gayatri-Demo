@@ -1,6 +1,7 @@
-"""Gayatri Demo v4.0.0 — Hardened Clean-Room Build & Anti-Reverse Engineering Script."""
+"""Gayatri Demo v4.0.0 — Hardened Clean-Room Build & Anti-Reverse Engineering Pipeline."""
 import hashlib
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -23,12 +24,21 @@ def clean_build_artifacts():
     DIST_DIR.mkdir(parents=True, exist_ok=True)
 
 def compile_curriculum_container():
-    print("[2/6] Compiling institutional curriculum into binary container (courses.dat)...")
-    from central_platform.courses.packer import compile_curriculum_container
+    print("[2/6] Compiling institutional curriculum into authenticated cryptographic container (courses.dat)...")
+    from central_platform.courses.packer import compile_curriculum_container, load_curriculum_container, MAGIC_HEADER, CONTAINER_VERSION
     courses_dir = DEMO_DATA_DIR / "courses"
     container_file = DEMO_DATA_DIR / "courses.dat"
     count = compile_curriculum_container(courses_dir, container_file)
     print(f"      [OK] Compiled {count} courses into {container_file.name} ({container_file.stat().st_size} bytes)")
+
+    # Immediate self-test of cryptographic container
+    raw = container_file.read_bytes()
+    assert raw.startswith(MAGIC_HEADER + CONTAINER_VERSION), "Cryptographic container header mismatch"
+    assert b"Engineering Mathematics" not in raw, "Curriculum leaks plaintext strings"
+    assert b"Differential Equations" not in raw, "Curriculum leaks plaintext strings"
+    loaded = load_curriculum_container(container_file)
+    assert len(loaded) == count, "Container failed to round-trip in memory"
+    print("      [OK] Cryptographic authentication and zero plaintext leakage verified.")
     return container_file
 
 def build_compiled_binary():
@@ -72,10 +82,39 @@ def audit_anti_reverse_engineering():
         raise AssertionError(f"SECURITY VIOLATION: Found loose JSON cards in distribution bundle: {json_cards}")
     print("      [AUDIT PASSED] Zero raw JSON curriculum cards detected; all assets compiled in courses.dat.")
 
-    # 3. Add convenient launcher batch wrapper calling compiled Gayatri.exe
+    # 3. Audit: Zero raw pedagogical prompt strings in binaries
+    exe_bytes = exe_file.read_bytes()
+    sensitive_patterns = [
+        b"NAND produces 0 ONLY when ALL inputs are 1",
+        b"NAND/NOR Logic Inversion Error",
+        b"De Morgan Dual Complement Error",
+        b"Linearity Violation in Differential Equations"
+    ]
+    for pattern in sensitive_patterns:
+        if pattern in exe_bytes:
+            raise AssertionError(f"SECURITY VIOLATION: Sensitive pedagogical pattern found in binary: {pattern.decode('utf-8')}")
+    print("      [AUDIT PASSED] Zero proprietary pedagogical prompt literals in compiled binary.")
+
+    # 4. Minify UI index.html in bundle
+    bundle_ui = bundle_dir / "app" / "ui" / "index.html"
+    if bundle_ui.exists():
+        raw_html = bundle_ui.read_text(encoding="utf-8")
+        minified = re.sub(r"<!--.*?-->", "", raw_html, flags=re.DOTALL)
+        bundle_ui.write_text(minified, encoding="utf-8")
+        print("      [AUDIT PASSED] Release UI assets minified and stripped of comments.")
+
+    # 5. Add convenient launcher batch wrapper calling compiled Gayatri.exe
     launcher_bat = bundle_dir / "Gayatri_Launcher.bat"
     launcher_bat.write_text("@echo off\r\nstart \"\" \"%~dp0Gayatri.exe\"\r\n", encoding="utf-8")
     print("      [OK] Standalone PE binary verified and launcher script created.")
+
+    # 6. Verify standalone PE headless startup execution
+    print("      Verifying standalone PE binary execution (--check-startup)...")
+    res = subprocess.run([str(exe_file), "--check-startup"], cwd=str(bundle_dir), capture_output=True, text=True, timeout=30)
+    if res.returncode != 0:
+        raise RuntimeError(f"Standalone PE failed --check-startup (exit code {res.returncode}):\n{res.stderr}\n{res.stdout}")
+    print("      [AUDIT PASSED] Standalone PE binary passed headless verification with exit code 0.")
+
     return bundle_dir
 
 def package_and_sign(bundle_dir: Path):

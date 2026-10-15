@@ -38,3 +38,15 @@ def test_missing_file_rejection(tmp_path):
     missing_dat = tmp_path / "non_existent.dat"
     with pytest.raises(FileNotFoundError):
         load_curriculum_container(missing_dat)
+
+def test_tamper_detection_rejection(tmp_path):
+    output_dat = tmp_path / "tamper_test.dat"
+    compile_curriculum_container(COURSES_DIR, output_dat)
+    
+    raw = bytearray(output_dat.read_bytes())
+    # Flip a byte in the encrypted payload
+    raw[-10] ^= 0xFF
+    output_dat.write_bytes(raw)
+    
+    with pytest.raises(ValueError, match="tampering detected"):
+        load_curriculum_container(output_dat)

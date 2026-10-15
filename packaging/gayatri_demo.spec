@@ -17,6 +17,8 @@ datas = [
 ]
 
 hiddenimports = [
+    'core.obfuscation',
+    'core.tamper',
     'central_platform.courses.packer',
     'central_platform.courses.service',
     'central_platform.rag.service',
@@ -48,7 +50,9 @@ a = Analysis(
     runtime_hooks=[],
     excludes=[
         'tkinter', 'matplotlib', 'scipy', 'torch', 'pytest',
-        'IPython', 'ipykernel', 'jupyter', 'jupyter_core', 'notebook'
+        'IPython', 'ipykernel', 'jupyter', 'jupyter_core', 'notebook',
+        'pdb', 'trace', 'cProfile', 'profile', 'pstats',
+        'unittest', 'doctest', 'idlelib'
     ],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
@@ -73,7 +77,7 @@ exe = EXE(
     strip=False,
     upx=False,  # Enforce No UPX to guarantee clean Antivirus scan (0 threats)
     console=False,
-    disable_windowed_traceback=False,
+    disable_windowed_traceback=True,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
