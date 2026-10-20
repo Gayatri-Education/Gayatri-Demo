@@ -101,3 +101,7 @@ demo_data/courses/
 
 .venv/
 .pytest_cache/
+.venv/
+.pytest_cache/
+__pycache__/
+.env
