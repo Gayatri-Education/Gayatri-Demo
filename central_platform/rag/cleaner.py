@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import re
 
+
 class DocumentCleaner:
     @staticmethod
     def clean(text: str) -> str:

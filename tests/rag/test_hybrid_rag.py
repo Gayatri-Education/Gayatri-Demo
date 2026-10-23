@@ -14,6 +14,7 @@ Covers:
 from __future__ import annotations
 
 from pathlib import Path
+
 import pytest
 
 from central_platform.courses.service import CourseService
@@ -25,9 +26,8 @@ from central_platform.rag.semantic import (
     LocalEmbeddingModel,
     LocalSemanticRetriever,
 )
-from central_platform.rag.service import BM25Retriever, RAGService
+from central_platform.rag.service import RAGService
 from central_platform.tutor.orchestrator import TutorOrchestrator
-
 
 # ---------------------------------------------------------------------------
 # 1. Reciprocal Rank Fusion (RRF) Unit Tests
@@ -202,6 +202,24 @@ def test_hybrid_rag_empty_and_nonsense_queries():
     assert rag.query("", "crs_engg_math", mode="hybrid") == []
     assert rag.query("   ", "crs_engg_math", mode="hybrid") == []
     assert rag.query("asdfghjklqwerty12345nonexistent", "crs_engg_math", mode="hybrid") == []
+
+
+def test_question_shaped_offcourse_prompt_returns_no_fabricated_grounding():
+    """Regression (v4.0.1 live-app bug): a question-shaped but off-course
+    prompt ("what is microprocessor ?" against Digital Electronics) must NOT
+    fabricate grounded evidence. Previously BM25 scored every card high
+    through stopwords ("what", "is" ≈ 0.5+) while the content word matched
+    nothing — the same generic cards ranked for any question."""
+    rag = RAGService()
+    # Stopword-only noise must not manufacture candidates.
+    assert rag.query("what is microprocessor ?", "crs_digital_elec", mode="hybrid") == []
+    assert rag.query("what is microprocessor ?", "crs_digital_elec", mode="bm25") == []
+    assert rag.query("what is it ?", "crs_digital_elec", mode="bm25") == []
+    # Content queries keep ranking their true material first.
+    assert any("nand" in c.title.lower()
+               for c in rag.query("how does nand gate work", "crs_digital_elec", mode="hybrid"))
+    cards = rag.query("explain de morgan's theorem", "crs_digital_elec", mode="hybrid")
+    assert cards and "De Morgan" in cards[0].title
 
 
 def test_hybrid_rag_document_ingestion_updates_both_retrievers(tmp_path):

@@ -1,6 +1,6 @@
 """Unit tests verifying packaging specifications and scripts."""
-from pathlib import Path
 from core.config import BASE_DIR
+
 
 def test_packaging_spec_files_exist():
     spec_file = BASE_DIR / "packaging" / "gayatri_demo.spec"

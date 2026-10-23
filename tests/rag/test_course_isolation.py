@@ -1,6 +1,6 @@
 """RAG Course Isolation and Cross-Contamination Acceptance Tests."""
-import pytest
 from central_platform.rag.service import RAGService
+
 
 def test_engineering_mathematics_retrieval_isolation():
     rag = RAGService()

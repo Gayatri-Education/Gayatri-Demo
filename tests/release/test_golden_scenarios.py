@@ -1,16 +1,17 @@
 """End-to-End Test Suite for All 10 Institutional Golden Demo Scenarios."""
-import json
-import pytest
 from pathlib import Path
 
+import pytest
+
+from app.portals.admin.controller import AdminPortalController
+from app.portals.teacher.controller import TeacherPortalController
 from central_platform.courses.service import CourseService
 from central_platform.learning.state import LearningStateManager
 from central_platform.models.schema import PedagogicalAction
 from central_platform.rag.service import RAGService
 from central_platform.tutor.orchestrator import TutorOrchestrator
-from app.portals.teacher.controller import TeacherPortalController
-from app.portals.admin.controller import AdminPortalController
 from core.config import APP_VERSION, WINDOW_TITLE
+
 
 @pytest.fixture
 def test_env(tmp_path):
@@ -32,7 +33,7 @@ def test_env(tmp_path):
 
 def test_scenario_01_first_impression(test_env):
     """Scenario 1: Platform Positioning, Title, and Startup Metadata."""
-    assert APP_VERSION == "4.0.0"
+    assert APP_VERSION == "4.0.1"
     assert "Adaptive Learning Platform" in WINDOW_TITLE
     assert "Chemistry Tutor" not in WINDOW_TITLE
 

@@ -1,7 +1,7 @@
 ﻿"""Unit tests verifying course packages, metadata, and prerequisite DAG integrity."""
-import pytest
 from central_platform.courses.service import CourseService
 from central_platform.rag.service import RAGService
+
 
 def test_course_packages_load():
     cs = CourseService()

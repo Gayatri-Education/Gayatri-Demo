@@ -1,0 +1,118 @@
+# Gayatri Demo — Python project configuration
+# Canonical packaging + tooling config (requirements.txt retained for the
+# release/build pipeline parity; pip installs should resolve from here).
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gayatri-demo"
+version = "4.0.1"
+description = "Gayatri — course-independent Socratic tutoring platform (offline institutional demo)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary" }
+
+dependencies = [
+    "PySide6>=6.6.0",
+    "pydantic>=2.0.0",
+    "numpy>=1.26.0",
+    "pypdf>=4.0.0",
+    "python-docx>=1.1.0",
+]
+
+[project.optional-dependencies]
+# Offline hybrid-RAG dense embeddings (pre-download all-MiniLM-L6-v2 locally).
+ml = [
+    "sentence-transformers>=3.0.0",
+    "torch>=2.2.0",
+]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.17.0",
+    "mypy>=1.13.0",
+]
+
+[tool.setuptools]
+packages = [
+    "app",
+    "app.bridge",
+    "app.portals",
+    "app.portals.teacher",
+    "app.portals.admin",
+    "app.windows",
+    "central_platform",
+    "central_platform.ai",
+    "central_platform.courses",
+    "central_platform.learning",
+    "central_platform.models",
+    "central_platform.rag",
+    "central_platform.tutor",
+    "core",
+]
+include-package-data = true
+
+[tool.setuptools.package-data]
+app = ["ui/*"]
+
+# ── pytest ─────────────────────────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Project-rooted import path: makes the conftest.py sys.path shim fully
+# redundant for normal `pytest` invocations from the checkout root.
+pythonpath = ["."]
+addopts = ""
+
+# ── ruff ───────────────────────────────────────────────────────────────────
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+extend-exclude = ["archive", "demo_video", "build", "dist", "release_staging"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+# Baseline tolerances (documented, to tighten next cycle):
+# - E402: app/main.py, conftest.py and recordings legitimately manipulate
+#   sys.path / import runtime pieces before absolute imports.
+# - E501: long display strings and embedding-literal lines dominate;
+#   formatter-first workflow is a later task.
+ignore = ["E402", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# UP036: app/main.py's `sys.version_info < (3, 10)` block is an intentional
+# runtime guard producing a friendly CLI message for users who launch the
+# demo with an unsupported interpreter; static analysis only knows the
+# declared floor (requires-python), so the rule flags a behavior we keep.
+"app/main.py" = ["UP036"]
+
+# ── mypy ───────────────────────────────────────────────────────────────────
+# Incremental adoption: the v4.0.0 codebase predates strict typing, so CI
+# checks public surfaces with pragmatic flags; overrides list known-debt
+# modules rather than drowning in blanket ignores.
+[tool.mypy]
+python_version = "3.10"
+files = ["core", "central_platform", "app"]
+ignore_missing_imports = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+show_error_codes = true
+exclude = ["^scripts/", "^tests/", "^archive/", "^demo_video/"]
+
+[[tool.mypy.overrides]]
+# Learning state machine performs dynamic inheritance-free access patterns
+# (json.loads → Any, sqlite cursors) — checked, but lenient on Any flow.
+module = ["central_platform.learning.state"]
+disallow_any_explicit = false
+
+# ── coverage ───────────────────────────────────────────────────────────────
+[tool.coverage.run]
+source = ["app", "central_platform", "core"]
+omit = ["tests/*", "scripts/*", "*/ui/*"]
+
+[tool.coverage.report]
+show_missing = true
+precision = 1

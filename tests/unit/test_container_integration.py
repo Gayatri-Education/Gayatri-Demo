@@ -1,11 +1,10 @@
 """Unit tests verifying full platform execution from binary container without raw JSON files."""
-import pytest
-from pathlib import Path
 from central_platform.courses.service import CourseService
-from central_platform.rag.service import RAGService
 from central_platform.learning.state import LearningStateManager
+from central_platform.rag.service import RAGService
 from central_platform.tutor.orchestrator import TutorOrchestrator
 from core.config import COURSES_CONTAINER_FILE
+
 
 def test_full_platform_from_binary_container_only(tmp_path):
     # 1. Use pre-compiled production binary container

@@ -13,7 +13,6 @@ import re
 import uuid
 from collections import Counter
 from pathlib import Path
-from typing import Dict, List, Optional, Set
 
 from central_platform.models.schema import RAGChunk
 from central_platform.rag.fusion import reciprocal_rank_fusion
@@ -23,7 +22,6 @@ from central_platform.rag.semantic import LocalEmbeddingModel, LocalSemanticRetr
 from core.config import (
     COURSES_CONTAINER_FILE,
     COURSES_DIR,
-    DEFAULT_CHUNK_SIZE,
     MAX_CHUNKS_PER_DOCUMENT,
     RAG_RETRIEVAL_MODE,
     RAG_RRF_K,
@@ -32,21 +30,37 @@ from core.config import (
 
 logger = logging.getLogger("gayatri.central_platform.rag")
 
+# Query-side stopword filter (standard BM25 practice; the corpus index keeps
+# every token so document lengths and term statistics are unchanged).
+# Without it, question-shaped prompts ("what is microprocessor ?") scored
+# every card high through ubiquitous tokens ("what", "is" ≈ 0.4–0.5 BM25) and
+# ranked the same generic cards for unrelated topics — fabricated grounding.
+_QUERY_STOPWORDS = frozenset({
+    "a", "all", "am", "an", "and", "any", "are", "as", "at", "be", "been",
+    "being", "but", "by", "can", "could", "did", "do", "does", "for", "from",
+    "had", "has", "have", "he", "her", "him", "his", "how", "i", "if", "in",
+    "is", "it", "its", "just", "me", "might", "must", "my", "no", "not", "of",
+    "on", "or", "our", "she", "should", "so", "some", "than", "that", "the",
+    "their", "them", "then", "there", "these", "they", "this", "those", "to",
+    "us", "was", "we", "were", "what", "when", "where", "which", "while",
+    "who", "whom", "why", "will", "with", "would", "you", "your",
+})
+
 
 class BM25Retriever:
     """Lightweight in-memory BM25 ranker for atomic concept cards."""
 
-    def __init__(self, chunks: List[RAGChunk], k1: float = 1.5, b: float = 0.75):
+    def __init__(self, chunks: list[RAGChunk], k1: float = 1.5, b: float = 0.75):
         self.chunks = chunks
         self.k1 = k1
         self.b = b
         self.corpus_size = len(chunks)
-        self.doc_lengths = []
-        self.doc_freqs: Dict[str, int] = Counter()
-        self.tokenized_corpus: List[List[str]] = []
+        self.doc_lengths: list[int] = []
+        self.doc_freqs: dict[str, int] = Counter()
+        self.tokenized_corpus: list[list[str]] = []
         self._build_index()
 
-    def _tokenize(self, text: str) -> List[str]:
+    def _tokenize(self, text: str) -> list[str]:
         tokens = re.findall(r"\b[a-zA-Z0-9_-]{2,}\b", text.lower())
         return tokens
 
@@ -65,10 +79,11 @@ class BM25Retriever:
                 self.doc_freqs[word] += 1
         self.avg_dl = total_len / self.corpus_size if self.corpus_size > 0 else 0.0
 
-    def query(self, query_text: str, top_k: int = RAG_TOP_K) -> List[RAGChunk]:
+    def query(self, query_text: str, top_k: int = RAG_TOP_K) -> list[RAGChunk]:
         if not self.chunks:
             return []
-        q_tokens = self._tokenize(query_text)
+        # Query-side stopword removal: keep only content-bearing terms.
+        q_tokens = [tok for tok in self._tokenize(query_text) if tok not in _QUERY_STOPWORDS]
         if not q_tokens:
             return []
 
@@ -88,7 +103,7 @@ class BM25Retriever:
                 scores[idx] += idf * (numerator / denominator)
 
         ranked_indices = sorted(range(self.corpus_size), key=lambda i: scores[i], reverse=True)
-        results: List[RAGChunk] = []
+        results: list[RAGChunk] = []
         for idx in ranked_indices:
             if scores[idx] > 0.05 and len(results) < top_k:
                 chunk_copy = self.chunks[idx].model_copy()
@@ -102,11 +117,11 @@ class RAGService:
 
     def __init__(
         self,
-        courses_dir: Optional[Path] = None,
-        container_file: Optional[Path] = None,
-        retrieval_mode: Optional[str] = None,
-        embedding_model: Optional[LocalEmbeddingModel] = None,
-        rrf_k: Optional[int] = None,
+        courses_dir: Path | None = None,
+        container_file: Path | None = None,
+        retrieval_mode: str | None = None,
+        embedding_model: LocalEmbeddingModel | None = None,
+        rrf_k: int | None = None,
     ) -> None:
         self.courses_dir = courses_dir or COURSES_DIR
         self.container_file = container_file or COURSES_CONTAINER_FILE
@@ -114,10 +129,10 @@ class RAGService:
         self.rrf_k = rrf_k if rrf_k is not None else RAG_RRF_K
         self.embedding_model = embedding_model or LocalEmbeddingModel()
 
-        self._course_indices: Dict[str, BM25Retriever] = {}
-        self._course_semantic_indices: Dict[str, LocalSemanticRetriever] = {}
-        self._course_chunks: Dict[str, List[RAGChunk]] = {}
-        self._id_alias: Dict[str, str] = {}
+        self._course_indices: dict[str, BM25Retriever] = {}
+        self._course_semantic_indices: dict[str, LocalSemanticRetriever] = {}
+        self._course_chunks: dict[str, list[RAGChunk]] = {}
+        self._id_alias: dict[str, str] = {}
         self.reload_all_courses()
 
     def reload_all_courses(self) -> None:
@@ -139,7 +154,7 @@ class RAGService:
                     self._id_alias[folder_name] = course_id
                     self._id_alias[course_id] = course_id
 
-                    chunks: List[RAGChunk] = []
+                    chunks: list[RAGChunk] = []
                     for item in data.get("cards", []):
                         item_copy = dict(item)
                         item_copy["course_id"] = course_id
@@ -177,7 +192,7 @@ class RAGService:
                 course_file = course_folder / "course.json"
                 if course_file.exists():
                     try:
-                        with open(course_file, "r", encoding="utf-8-sig") as cf:
+                        with open(course_file, encoding="utf-8-sig") as cf:
                             c_data = json.load(cf)
                             if "id" in c_data:
                                 course_id = c_data["id"]
@@ -190,11 +205,11 @@ class RAGService:
 
     def _load_course_cards(self, course_folder: Path, course_id: str, folder_name: str) -> None:
         rag_dir = course_folder / "rag"
-        chunks: List[RAGChunk] = []
+        chunks: list[RAGChunk] = []
         if rag_dir.exists():
             for file_path in rag_dir.glob("*.json"):
                 try:
-                    with open(file_path, "r", encoding="utf-8-sig") as f:
+                    with open(file_path, encoding="utf-8-sig") as f:
                         data = json.load(f)
                     if isinstance(data, list):
                         for item in data:
@@ -224,8 +239,8 @@ class RAGService:
         query_text: str,
         course_id: str,
         top_k: int = RAG_TOP_K,
-        mode: Optional[str] = None,
-    ) -> List[RAGChunk]:
+        mode: str | None = None,
+    ) -> list[RAGChunk]:
         """Strict course-isolated retrieval using BM25, Semantic, or Hybrid (RRF).
 
         Args:
@@ -249,7 +264,7 @@ class RAGService:
         # Candidate pool size for fusion
         pool_size = max(top_k * 2, 6)
 
-        results: List[RAGChunk] = []
+        results: list[RAGChunk] = []
 
         if active_mode == "bm25":
             if bm25_retriever:
@@ -291,7 +306,18 @@ class RAGService:
     def get_course_chunk_count(self, course_id: str) -> int:
         return len(self._course_chunks.get(course_id, []))
 
-    def rebuild_semantic_index(self, course_id: Optional[str] = None) -> None:
+    def get_course_topic_titles(self, course_id: str) -> list[str]:
+        """Titles of knowledge cards currently indexed for the course, in corpus order.
+
+        Used by the tutor to guide discovery on ungrounded turns: when a query
+        misses the corpus, the reply enumerates what the course genuinely
+        covers instead of repeating a generic clarification request.
+        """
+        canonical = self._id_alias.get(course_id, course_id)
+        chunks = self._course_chunks.get(canonical) or self._course_chunks.get(course_id, [])
+        return [c.title for c in chunks]
+
+    def rebuild_semantic_index(self, course_id: str | None = None) -> None:
         """Forces re-indexing of embeddings for a specific course or all courses."""
         targets = [course_id] if course_id else list(self._course_semantic_indices.keys())
         for cid in targets:
@@ -310,13 +336,13 @@ class RAGService:
                 return False, "Document contains no readable text", 0
 
             paragraphs = [p.strip() for p in content.split("\n\n") if p.strip()]
-            new_chunks: List[RAGChunk] = []
+            new_chunks: list[RAGChunk] = []
             source_id = f"src_{uuid.uuid4().hex[:8]}"
 
             canonical_id = self._id_alias.get(course_id, course_id)
             self._id_alias[course_id] = canonical_id
 
-            for i, para in enumerate(paragraphs[:MAX_CHUNKS_PER_DOCUMENT]):
+            for _i, para in enumerate(paragraphs[:MAX_CHUNKS_PER_DOCUMENT]):
                 title = para.split("\n")[0][:60]
                 chunk = RAGChunk(
                     id=f"chk_up_{uuid.uuid4().hex[:8]}",

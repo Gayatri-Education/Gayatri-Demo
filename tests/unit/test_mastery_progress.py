@@ -10,9 +10,7 @@ Verifies fixes for Issue #2:
 """
 from __future__ import annotations
 
-import uuid
 from pathlib import Path
-import pytest
 
 from central_platform.courses.service import CourseService
 from central_platform.learning.state import LearningStateManager

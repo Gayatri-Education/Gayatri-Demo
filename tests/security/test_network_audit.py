@@ -1,15 +1,13 @@
 """Security & Air-Gapped Network Audit Tests."""
 import re
-import socket
-from pathlib import Path
 from unittest.mock import patch
-import pytest
 
-from core.config import BASE_DIR, LOOPBACK_HOST
 from central_platform.courses.service import CourseService
-from central_platform.rag.service import RAGService
 from central_platform.learning.state import LearningStateManager
+from central_platform.rag.service import RAGService
 from central_platform.tutor.orchestrator import TutorOrchestrator
+from core.config import BASE_DIR, LOOPBACK_HOST
+
 
 def test_loopback_binding_configuration():
     assert LOOPBACK_HOST == "127.0.0.1"

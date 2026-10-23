@@ -7,7 +7,7 @@ and local dense semantic vector search) using reciprocal rank scoring:
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional
+
 from central_platform.models.schema import RAGChunk
 from core.config import RAG_RRF_K, RAG_TOP_K
 
@@ -15,11 +15,11 @@ logger = logging.getLogger("gayatri.central_platform.rag.fusion")
 
 
 def reciprocal_rank_fusion(
-    bm25_results: List[RAGChunk],
-    semantic_results: List[RAGChunk],
+    bm25_results: list[RAGChunk],
+    semantic_results: list[RAGChunk],
     k: int = RAG_RRF_K,
     top_k: int = RAG_TOP_K,
-) -> List[RAGChunk]:
+) -> list[RAGChunk]:
     """Combines BM25 and semantic retrieval candidates using Reciprocal Rank Fusion.
 
     Args:
@@ -35,10 +35,10 @@ def reciprocal_rank_fusion(
         raise ValueError(f"RRF smoothing constant k must be positive, got {k}")
 
     # Map chunk_id -> (accumulated_rrf_score, RAGChunk)
-    candidates: Dict[str, RAGChunk] = {}
-    rrf_scores: Dict[str, float] = {}
+    candidates: dict[str, RAGChunk] = {}
+    rrf_scores: dict[str, float] = {}
 
-    def _process_ranking_list(results: List[RAGChunk], retriever_name: str) -> None:
+    def _process_ranking_list(results: list[RAGChunk], retriever_name: str) -> None:
         seen_in_this_list = set()
         for rank_0, chunk in enumerate(results):
             if chunk.id in seen_in_this_list:
@@ -68,7 +68,7 @@ def reciprocal_rank_fusion(
         reverse=True,
     )
 
-    fused_results: List[RAGChunk] = []
+    fused_results: list[RAGChunk] = []
     for cid in sorted_ids[:top_k]:
         chunk = candidates[cid]
         chunk.score = round(rrf_scores[cid], 6)

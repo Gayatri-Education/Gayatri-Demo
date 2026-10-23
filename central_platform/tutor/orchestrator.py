@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import logging
 import uuid
-from typing import Optional
 
 from central_platform.ai.adapters import SocraticInferenceEngine
 from central_platform.courses.service import CourseService
@@ -11,6 +10,7 @@ from central_platform.learning.actions import NextActionEngine
 from central_platform.learning.state import LearningStateManager
 from central_platform.models.schema import LearningEvent, PedagogicalAction, TutorResponse
 from central_platform.rag.service import RAGService
+from central_platform.tutor.guardrails import redact_leaked_answers
 
 logger = logging.getLogger("gayatri.central_platform.tutor")
 
@@ -21,7 +21,7 @@ class TutorOrchestrator:
         self,
         course_service: CourseService,
         rag_service: RAGService,
-        state_manager: Optional[LearningStateManager] = None
+        state_manager: LearningStateManager | None = None
     ) -> None:
         self.course_service = course_service
         self.rag_service = rag_service
@@ -42,7 +42,7 @@ class TutorOrchestrator:
         self,
         student_id: str,
         user_prompt: str,
-        session_id: Optional[str] = None
+        session_id: str | None = None
     ) -> TutorResponse:
         """Executes the closed-loop Socratic turn lifecycle."""
         session_id = session_id or f"sess_{uuid.uuid4().hex[:8]}"
@@ -67,20 +67,47 @@ class TutorOrchestrator:
         topic_name = eval_result.topic_name or (evidence_cards[0].title if evidence_cards else None)
 
         # 3. Socratic Response Synthesis
+        # On ungrounded turns, pass the course's real topic coverage so the
+        # reply guides the student toward available material (or their own
+        # curriculum) instead of a repetitive generic clarification.
+        available_topics: list[str] | None = None
+        if not evidence_cards:
+            course_topics = self.rag_service.get_course_topic_titles(self.active_course_id)
+            if course_topics:
+                available_topics = course_topics[:8]
+
         bot_message = SocraticInferenceEngine.generate_socratic_response(
             course_title=course_title,
             user_prompt=user_prompt,
             action=action,
             evidence_cards=evidence_cards,
             misconception_feedback=mis_feedback,
-            evaluation_feedback=eval_result.feedback if correctness is not None else None
+            evaluation_feedback=eval_result.feedback if correctness is not None else None,
+            available_topics=available_topics
         )
 
         # 4. Anti-Answer-Leakage Invariant Check
-        # Ensure that during EVALUATE/REMEDIATE, final numerical answers are not dumped
-        if action == PedagogicalAction.REMEDIATE:
-            # Pedagogical assertion: feedback must explain the principle, not reveal test solutions
-            pass
+        #     During evaluation/remediation the tutor must teach the principle and
+        #     elicit the student's own reasoning — never hand over the final numeric
+        #     answer carried by the retrieved knowledge cards. Card-sourced answers
+        #     are redacted before the turn is committed/persisted.
+        if action in (PedagogicalAction.EVALUATE, PedagogicalAction.REMEDIATE):
+            raw_bot_message = bot_message
+            bot_message, leaked_values = redact_leaked_answers(
+                message=bot_message,
+                action=action,
+                evidence_cards=evidence_cards,
+            )
+            if leaked_values:
+                logger.warning(
+                    "Answer-leakage guard redacted final answers %s in a %s turn "
+                    "(course=%s, interpreted message %d chars -> %d chars).",
+                    leaked_values,
+                    action.value,
+                    self.active_course_id,
+                    len(raw_bot_message),
+                    len(bot_message),
+                )
 
         # 5. Commit Learning Event & Update Mastery State
         event = LearningEvent(

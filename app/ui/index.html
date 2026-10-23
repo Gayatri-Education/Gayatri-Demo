@@ -5,326 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gayatri — AI-Powered Adaptive Learning Platform</title>
   <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: #0f0f23;
-      color: #f0f0f5;
-      height: 100vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .titlebar, .sidebar, .win-btn, .nav-btn, .btn-primary, .btn-secondary {
-      user-select: none;
-      -webkit-user-select: none;
-    }
-
-    .workspace, .chat-messages, .msg, .evidence-drawer, .stat-card, .course-card {
-      user-select: text;
-      -webkit-user-select: text;
-    }
-
-    /* ── Frameless Titlebar ── */
-    .titlebar {
-      height: 38px;
-      background: #16213e;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 14px;
-      border-bottom: 1px solid #1f2847;
-      flex-shrink: 0;
-      -webkit-app-region: drag;
-    }
-    .titlebar-brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #f0f0f5;
-    }
-    .brand-badge {
-      background: #e94560;
-      color: white;
-      font-size: 10px;
-      font-weight: 700;
-      padding: 2px 6px;
-      border-radius: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-    .active-course-badge {
-      background: #1e293b;
-      border: 1px solid #334155;
-      padding: 3px 10px;
-      border-radius: 12px;
-      font-size: 11px;
-      color: #38bdf8;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .titlebar-controls {
-      display: flex;
-      gap: 8px;
-      -webkit-app-region: no-drag;
-    }
-    .win-btn {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      border: none;
-      cursor: pointer;
-      transition: opacity 0.15s;
-    }
-    .win-btn:hover { opacity: 0.8; }
-    .btn-min { background: #f5c542; }
-    .btn-max { background: #27c93f; }
-    .btn-close { background: #e94560; }
-
-    /* ── App Layout ── */
-    .app-container {
-      display: flex;
-      flex: 1;
-      height: calc(100vh - 38px);
-      overflow: hidden;
-    }
-
-    /* ── Sidebar ── */
-    .sidebar {
-      width: 220px;
-      background: #16213e;
-      border-right: 1px solid #1f2847;
-      display: flex;
-      flex-direction: column;
-      padding: 14px 10px;
-      flex-shrink: 0;
-    }
-    .nav-group-title {
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #64748b;
-      padding: 8px 10px 4px;
-    }
-    .nav-btn {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      border: none;
-      background: transparent;
-      color: #94a3b8;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      text-align: left;
-      transition: all 0.15s;
-      margin-bottom: 3px;
-    }
-    .nav-btn:hover { background: #1e293b; color: #f1f5f9; }
-    .nav-btn.active { background: #e94560; color: white; font-weight: 600; }
-    .nav-badge {
-      margin-left: auto;
-      font-size: 9px;
-      background: #0f172a;
-      padding: 2px 6px;
-      border-radius: 10px;
-      color: #94a3b8;
-    }
-
-    /* ── Main Workspace ── */
-    .workspace {
-      flex: 1;
-      overflow-y: auto;
-      padding: 24px;
-      position: relative;
-    }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; height: 100%; }
-
-    /* ── Cards and UI Components ── */
-    .hero-card {
-      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-      border: 1px solid #334155;
-      border-radius: 16px;
-      padding: 32px;
-      margin-bottom: 24px;
-      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
-    }
-    .hero-title { font-size: 26px; font-weight: 700; color: #f8fafc; margin-bottom: 10px; }
-    .hero-subtitle { font-size: 15px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px; max-width: 800px; }
-    .hero-buttons { display: flex; gap: 14px; }
-    .btn-primary {
-      background: #e94560;
-      color: white;
-      border: none;
-      padding: 10px 22px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.1s, background 0.15s;
-    }
-    .btn-primary:hover { background: #ff5270; transform: translateY(-1px); }
-    .btn-secondary {
-      background: #334155;
-      color: #f1f5f9;
-      border: 1px solid #475569;
-      padding: 10px 22px;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-    }
-    .btn-secondary:hover { background: #475569; }
-
-    /* Course Cards Grid */
-    .course-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 20px;
-    }
-    .course-card {
-      background: #16213e;
-      border: 1px solid #1f2847;
-      border-radius: 12px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      transition: border-color 0.2s, transform 0.2s;
-    }
-    .course-card:hover { border-color: #38bdf8; transform: translateY(-2px); }
-    .course-card.active-card { border-color: #e94560; box-shadow: 0 0 15px rgba(233, 69, 96, 0.2); }
-    .course-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-    .course-code { font-size: 11px; font-weight: 700; color: #38bdf8; background: #0f172a; padding: 2px 8px; border-radius: 4px; }
-    .course-title { font-size: 17px; font-weight: 600; color: #f8fafc; margin-bottom: 8px; }
-    .course-desc { font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 16px; flex: 1; }
-    .course-meta { display: flex; gap: 14px; font-size: 12px; color: #64748b; margin-bottom: 16px; }
-
-    /* Chat & Evidence Drawer */
-    .chat-layout { display: flex; height: 100%; gap: 16px; overflow: hidden; min-height: 0; }
-    .chat-main { flex: 1; display: flex; flex-direction: column; background: #16213e; border: 1px solid #1f2847; border-radius: 12px; overflow: hidden; min-height: 0; }
-    .chat-header { padding: 12px 16px; background: #1a2238; border-bottom: 1px solid #1f2847; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-    .chat-messages { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-height: 0; }
-    .msg { padding: 14px 18px; border-radius: 10px; max-width: 85%; font-size: 14px; line-height: 1.6; word-break: break-word; }
-    .msg-user { align-self: flex-end; background: #3b82f6; color: white; border-bottom-right-radius: 2px; }
-    .msg-bot { align-self: flex-start; background: #0f172a; border: 1px solid #334155; color: #f1f5f9; border-bottom-left-radius: 2px; }
-    .chat-input-bar { padding: 14px; background: #1a2238; border-top: 1px solid #1f2847; display: flex; gap: 10px; flex-shrink: 0; }
-    .chat-input { flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 10px 14px; color: white; font-size: 14px; outline: none; user-select: text; -webkit-user-select: text; }
-    .chat-input:focus { border-color: #38bdf8; box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2); }
-
-    .evidence-drawer { width: 340px; background: #16213e; border: 1px solid #1f2847; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; min-height: 0; flex-shrink: 0; }
-    .evidence-card { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; font-size: 12px; }
-    .evidence-card-title { font-weight: 600; color: #38bdf8; margin-bottom: 4px; word-break: break-word; }
-    .evidence-card-content { color: #cbd5e1; line-height: 1.5; word-break: break-word; }
-    .grounding-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; color: #27c93f; background: rgba(39, 201, 63, 0.1); padding: 2px 6px; border-radius: 4px; margin-bottom: 8px; }
-
-    /* Tables & Dashboard */
-    .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-    .stat-card { background: #16213e; border: 1px solid #1f2847; border-radius: 12px; padding: 16px; }
-    .stat-val { font-size: 24px; font-weight: 700; color: #f8fafc; margin-top: 6px; }
-    .stat-lbl { font-size: 12px; color: #94a3b8; }
-
-    /* Demonstration Video Caption Bar Overlay */
-    .demo-caption-bar {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.95);
-      border: 1px solid rgba(56, 189, 248, 0.6);
-      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.6), 0 0 16px rgba(56, 189, 248, 0.3);
-      border-radius: 9999px;
-      padding: 10px 24px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      z-index: 10000;
-      pointer-events: none;
-      transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-      backdrop-filter: blur(12px);
-      max-width: 85%;
-    }
-    .demo-caption-bar.hidden {
-      opacity: 0;
-      transform: translate(-50%, 20px);
-      pointer-events: none;
-    }
-    .caption-pulse {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #38bdf8;
-      box-shadow: 0 0 10px #38bdf8;
-      animation: pulseGlow 1.5s infinite;
-      flex-shrink: 0;
-    }
-    @keyframes pulseGlow {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.3; transform: scale(0.85); }
-    }
-    .caption-text {
-      font-size: 14px;
-      font-weight: 600;
-      color: #f8fafc;
-      letter-spacing: 0.3px;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-      white-space: nowrap;
-    }
-
-    @media (max-width: 1100px) {
-      .workspace { padding: 16px; }
-      .sidebar { width: 190px; }
-      .evidence-drawer { width: 280px; }
-      .stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      #tab-welcome > div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; }
-    }
-
-    @media (max-width: 860px) {
-      .chat-layout { flex-direction: column; }
-      .chat-main { min-height: 260px; }
-      .evidence-drawer { width: 100%; max-height: 180px; }
-    }
-
-    @media (max-width: 700px) {
-      .titlebar { padding: 0 8px; }
-      .titlebar-brand { gap: 6px; font-size: 11px; }
-      .active-course-badge { max-width: 42vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-      .sidebar { width: 64px; padding: 10px 6px; }
-      .nav-group-title, .nav-btn span:not(.nav-badge), .nav-badge { display: none; }
-      .nav-btn { justify-content: center; padding: 12px 6px; font-size: 18px; }
-      .workspace { padding: 10px; }
-      .hero-card { padding: 18px; }
-      .hero-title { font-size: 20px; }
-      .hero-buttons { flex-wrap: wrap; }
-      .course-grid { grid-template-columns: minmax(0, 1fr); }
-      .stats-row { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-      .chat-main { min-height: 220px; }
-      .msg { max-width: 96%; padding: 10px 12px; }
-      .chat-input-bar { padding: 8px; }
-      .chat-input { min-width: 0; }
-      .demo-caption-bar { max-width: calc(100% - 24px); padding: 8px 14px; }
-      .caption-text { font-size: 12px; white-space: normal; }
-    }
-
-    @media (max-height: 700px) {
-      .workspace { padding-top: 10px; padding-bottom: 10px; }
-      .chat-main { min-height: 0; }
-      .evidence-drawer { width: 260px; }
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
   <!-- Frameless Titlebar -->
-  <div class="titlebar">
+  <header class="titlebar" role="banner">
     <div class="titlebar-brand">
       <span class="brand-badge">Gayatri v4</span>
       <span>Gayatri — AI-Powered Adaptive Learning Platform</span>
@@ -333,32 +19,32 @@
       <span>📚 Active:</span> <strong id="headerCourseName">Engineering Mathematics</strong>
     </div>
     <div class="titlebar-controls">
-      <button class="win-btn btn-min" onclick="minWindow()"></button>
-      <button class="win-btn btn-max" onclick="maxWindow()"></button>
-      <button class="win-btn btn-close" onclick="closeWindow()"></button>
+      <button type="button" class="win-btn btn-min" aria-label="Minimize window" title="Minimize" onclick="minWindow()"></button>
+      <button type="button" class="win-btn btn-max" aria-label="Maximize or restore window" title="Maximize" onclick="maxWindow()"></button>
+      <button type="button" class="win-btn btn-close" aria-label="Close window" title="Close" onclick="closeWindow()"></button>
     </div>
-  </div>
+  </header>
 
   <div class="app-container">
     <!-- Sidebar Navigation -->
-    <div class="sidebar">
+    <nav class="sidebar" aria-label="Main navigation">
       <div class="nav-group-title">Platform</div>
-      <button class="nav-btn active" onclick="switchNav('welcome', this)">🏠 Welcome & Vision</button>
-      <button class="nav-btn" onclick="switchNav('courses', this)">📚 Course Catalog</button>
-      <button class="nav-btn" onclick="switchNav('tutor', this)">💬 Socratic AI Tutor</button>
-      <button class="nav-btn" onclick="switchNav('progress', this)">📊 Student Mastery</button>
+      <button type="button" class="nav-btn active" onclick="switchNav('welcome', this)">🏠 Welcome & Vision</button>
+      <button type="button" class="nav-btn" onclick="switchNav('courses', this)">📚 Course Catalog</button>
+      <button type="button" class="nav-btn" onclick="switchNav('tutor', this)">💬 Socratic AI Tutor</button>
+      <button type="button" class="nav-btn" onclick="switchNav('progress', this)">📊 Student Mastery</button>
 
       <div class="nav-group-title" style="margin-top: 14px;">Institution Hub</div>
-      <button class="nav-btn" onclick="switchNav('teacher', this)">👩‍🏫 Teacher Copilot <span class="nav-badge">Preview</span></button>
-      <button class="nav-btn" onclick="switchNav('admin', this)">🏛️ Institution Admin <span class="nav-badge">Preview</span></button>
-      <button class="nav-btn" onclick="switchNav('curriculum', this)">📄 Bring Curriculum</button>
-    </div>
+      <button type="button" class="nav-btn" onclick="switchNav('teacher', this)">👩‍🏫 Teacher Copilot <span class="nav-badge">Preview</span></button>
+      <button type="button" class="nav-btn" onclick="switchNav('admin', this)">🏛️ Institution Admin <span class="nav-badge">Preview</span></button>
+      <button type="button" class="nav-btn" onclick="switchNav('curriculum', this)">📄 Bring Curriculum</button>
+    </nav>
 
     <!-- Main Workspace -->
-    <div class="workspace">
+    <main class="workspace">
 
       <!-- 1. Welcome Screen (Screen A & B) -->
-      <div id="tab-welcome" class="tab-content active">
+      <div id="tab-welcome" class="tab-content active" role="region" aria-label="Welcome">
         <div class="hero-card">
           <div class="hero-title">Adaptive Socratic Learning Grounded in Institution Knowledge</div>
           <div class="hero-subtitle">
@@ -367,8 +53,8 @@
             remediates misconceptions, and guides learners toward mastery without dumping answers.
           </div>
           <div class="hero-buttons">
-            <button class="btn-primary" onclick="startGuidedShowcase()">🚀 Enter Guided Showcase</button>
-            <button class="btn-secondary" onclick="switchNav('courses')">🔍 Explore Sandbox</button>
+            <button type="button" class="btn-primary" onclick="startGuidedShowcase()">🚀 Enter Guided Showcase</button>
+            <button type="button" class="btn-secondary" onclick="switchNav('courses')">🔍 Explore Sandbox</button>
           </div>
         </div>
 
@@ -392,7 +78,7 @@
       </div>
 
       <!-- 2. Course Catalog (Screen C & D) -->
-      <div id="tab-courses" class="tab-content">
+      <div id="tab-courses" class="tab-content" role="region" aria-label="Course catalog">
         <h2 style="margin-bottom: 6px;">Institutional Course Catalog</h2>
         <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Switch between distinct course domains to observe course independence and RAG isolation.</p>
         <div class="course-grid" id="courseGrid">
@@ -401,7 +87,7 @@
       </div>
 
       <!-- 3. Tutor Chat (Screen E & F) -->
-      <div id="tab-tutor" class="tab-content">
+      <div id="tab-tutor" class="tab-content" role="region" aria-label="Socratic tutor">
         <div class="chat-layout">
           <div class="chat-main">
             <div class="chat-header">
@@ -409,21 +95,21 @@
                 <strong id="chatCourseTitle">Engineering Mathematics</strong>
                 <span style="font-size: 12px; color: #94a3b8; margin-left: 8px;" id="chatStatus">Socratic Tutor Active</span>
               </div>
-              <button class="btn-secondary" style="padding: 4px 12px; font-size: 12px;" onclick="clearChat()">Clear Session</button>
+              <button type="button" class="btn-secondary" style="padding: 4px 12px; font-size: 12px;" onclick="clearChat()">Clear Session</button>
             </div>
-            <div class="chat-messages" id="chatMessages">
+            <div class="chat-messages" id="chatMessages" role="log" aria-live="polite" aria-label="Tutor conversation">
               <div class="msg msg-bot">
                 Hello! I am Gayatri, your adaptive Socratic tutor for <strong id="welcomeCourseName">Engineering Mathematics</strong>.
                 Ask me any conceptual question, or let me know what you'd like to work through!
               </div>
             </div>
             <div class="chat-input-bar">
-              <input type="text" class="chat-input" id="chatInput" placeholder="Ask a question or provide your reasoning..." onkeypress="handleKey(event)">
-              <button class="btn-primary" id="chatSendBtn" onclick="sendMessage()">Send</button>
+              <input type="text" class="chat-input" id="chatInput" placeholder="Ask a question or provide your reasoning..." aria-label="Ask a question or provide your reasoning" onkeypress="handleKey(event)">
+              <button type="button" class="btn-primary" id="chatSendBtn" onclick="sendMessage()">Send</button>
             </div>
           </div>
 
-          <div class="evidence-drawer">
+          <aside class="evidence-drawer" role="complementary" aria-label="Retrieved evidence">
             <div style="font-size: 13px; font-weight: 700; color: #f8fafc; display: flex; align-items: center; justify-content: space-between;">
               <span>🔍 Retrieved Evidence</span>
               <span id="evidenceCount" style="font-size: 11px; color: #64748b;">0 cards</span>
@@ -432,12 +118,12 @@
             <div id="evidenceList" style="display: flex; flex-direction: column; gap: 10px;">
               <p style="font-size: 12px; color: #64748b;">Submit a query to inspect real-time RAG grounding cards and source citations.</p>
             </div>
-          </div>
+          </aside>
         </div>
       </div>
 
       <!-- 4. Student Mastery (Screen I) -->
-      <div id="tab-progress" class="tab-content">
+      <div id="tab-progress" class="tab-content" role="region" aria-label="Student mastery">
         <h2 style="margin-bottom: 6px;">Learner Cognitive Mastery State</h2>
         <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Continuous cognitive state tracking and prerequisite diagnostic trajectory.</p>
 
@@ -469,7 +155,7 @@
       </div>
 
       <!-- 5. Teacher Copilot Preview (Screen J) -->
-      <div id="tab-teacher" class="tab-content">
+      <div id="tab-teacher" class="tab-content" role="region" aria-label="Teacher copilot">
         <h2 style="margin-bottom: 6px;">Teacher Copilot & Cohort Health</h2>
         <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Class-level performance monitoring, misconception heatmaps, and pedagogical intervention queue.</p>
 
@@ -544,7 +230,7 @@
       </div>
 
       <!-- 6. Institution Admin Preview (Screen K) -->
-      <div id="tab-admin" class="tab-content">
+      <div id="tab-admin" class="tab-content" role="region" aria-label="Institution admin">
         <h2 style="margin-bottom: 6px;">Institution Administration & Governance</h2>
         <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Curriculum oversight, knowledge repository status, and security compliance.</p>
 
@@ -614,7 +300,7 @@
       </div>
 
       <!-- 7. Bring Your Curriculum (Screen L) -->
-      <div id="tab-curriculum" class="tab-content">
+      <div id="tab-curriculum" class="tab-content" role="region" aria-label="Curriculum upload">
         <h2 style="margin-bottom: 6px;">Bring Your Curriculum (Dynamic Ingestion Sandbox)</h2>
         <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Upload institution course notes (PDF/DOCX/TXT) to instantly expand the tutor's grounded knowledge.</p>
 
@@ -622,330 +308,18 @@
           <div style="font-size: 32px; margin-bottom: 12px;">📄</div>
           <div style="font-size: 16px; font-weight: 600; margin-bottom: 6px;">Upload Syllabus or Lecture Notes</div>
           <div style="font-size: 13px; color: #94a3b8; margin-bottom: 16px;">Supports PDF, DOCX, TXT, and Markdown (Max 5 MB)</div>
-          <button class="btn-primary" onclick="uploadCurriculum()">Select a Curriculum File</button>
-          <div id="ingestStatus" style="margin-top: 14px; font-size: 13px; color: #27c93f;"></div>
+          <button type="button" class="btn-primary" onclick="uploadCurriculum()">Select a Curriculum File</button>
+          <div id="ingestStatus" style="margin-top: 14px; font-size: 13px; color: #27c93f;" role="status" aria-live="polite"></div>
         </div>
       </div>
 
-    </div>
+    </main>
   </div>
 
-  <script>
-    // Tab switching
-    function switchNav(tabId, btn) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
-      const target = document.getElementById('tab-' + tabId);
-      if (target) target.classList.add('active');
-      if (btn) btn.classList.add('active');
-      if (tabId === 'courses') renderCourses();
-      if (tabId === 'progress') refreshAnalytics();
-    }
-
-    // Default courses fallback data
-    let coursesData = [
-      { id: "engineering_mathematics", code: "MATH201", title: "Engineering Mathematics", description: "Foundational mathematical techniques: ODEs, Laplace transforms, Fourier series.", module_count: 4, card_count: 4, is_optional: false },
-      { id: "digital_electronics", code: "EC202", title: "Digital Electronics", description: "Digital logic: Boolean algebra, universal gates, combinational and sequential logic.", module_count: 4, card_count: 4, is_optional: false },
-      { id: "chemistry_optional", code: "CHEM101", title: "Senior Secondary Chemistry", description: "Optional legacy showcase covering thermodynamics and chemical bonding.", module_count: 2, card_count: 1, is_optional: true }
-    ];
-
-    let currentCourseId = "engineering_mathematics";
-
-    function renderCourses() {
-      const grid = document.getElementById('courseGrid');
-      grid.replaceChildren();
-      coursesData.forEach(c => {
-        const card = document.createElement('div');
-        card.className = 'course-card' + (c.id === currentCourseId ? ' active-card' : '');
-        card.innerHTML = `
-          <div class="course-header">
-            <span class="course-code">${escapeHTML(c.code)}</span>
-            ${c.is_optional ? '<span style="font-size:10px; color:#f5c542; background:rgba(245,197,66,0.1); padding:2px 6px; border-radius:4px;">Optional</span>' : ''}
-          </div>
-          <div class="course-title">${escapeHTML(c.title)}</div>
-          <div class="course-desc">${escapeHTML(c.description)}</div>
-          <div class="course-meta">
-            <span>📖 ${parseInt(c.module_count, 10) || 0} Modules</span>
-            <span>🔍 ${parseInt(c.card_count, 10) || 0} RAG Cards</span>
-          </div>
-          <button class="btn-primary" style="margin-top:auto;" onclick="selectCourse('${escapeHTML(c.id)}')">
-            ${c.id === currentCourseId ? '✓ Active Course' : 'Switch to Course'}
-          </button>
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    function selectCourse(courseId) {
-      currentCourseId = courseId;
-      const c = coursesData.find(x => x.id === courseId);
-      if (c) {
-        const hcn = document.getElementById('headerCourseName');
-        if (hcn) hcn.innerText = c.title;
-        const cct = document.getElementById('chatCourseTitle');
-        if (cct) cct.innerText = c.title;
-        const wcn = document.getElementById('welcomeCourseName');
-        if (wcn) wcn.innerText = c.title;
-        const valSub = document.getElementById('valSubject');
-        if (valSub) valSub.innerText = c.code;
-      }
-      renderCourses();
-      clearChat();
-      if (window.bridge && typeof window.bridge.switchCourse === 'function') {
-        window.bridge.switchCourse(courseId);
-        refreshAnalytics(courseId);
-      }
-      switchNav('tutor');
-    }
-
-    function handleKey(e) {
-      if (e.key === 'Enter') sendMessage();
-    }
-
-    function sendMessage() {
-      const input = document.getElementById('chatInput');
-      const text = input.value.trim();
-      if (!text) return;
-      input.value = '';
-
-      // Append user msg
-      appendMsg(text, 'user');
-
-      // Call bridge or fallback
-      if (window.bridge && typeof window.bridge.sendQuery === 'function') {
-        const ret = window.bridge.sendQuery(text, 'demo_student', function(resStr) {
-          try {
-            const res = typeof resStr === 'string' ? JSON.parse(resStr) : resStr;
-            renderTutorResponse(res);
-            refreshAnalytics(currentCourseId);
-          } catch(e) {}
-        });
-        if (ret && typeof ret.then === 'function') {
-          ret.then(resStr => {
-            const res = typeof resStr === 'string' ? JSON.parse(resStr) : resStr;
-            renderTutorResponse(res);
-            refreshAnalytics(currentCourseId);
-          });
-        }
-      } else {
-        // Fallback for standalone demo inspection
-        setTimeout(() => {
-          simulateResponse(text);
-        }, 300);
-      }
-    }
-
-function setDemoCaption(text) {
-      const bar = document.getElementById('demo-caption-bar');
-      const txt = document.getElementById('demo-caption-text');
-      if (!bar || !txt) return;
-      if (!text) {
-        bar.classList.add('hidden');
-      } else {
-        txt.innerText = text;
-        bar.classList.remove('hidden');
-      }
-    }
-
-    function escapeHTML(str) {
-      if (str === null || str === undefined) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function formatMarkdown(text) {
-      if (!text) return '';
-      // Escape all HTML to prevent script/tag injection before markdown formatting
-      const safe = escapeHTML(text);
-      return safe
-        .replace(/^### (.*$)/gim, '<h4 style="margin: 8px 0 4px 0; color: #38bdf8; font-size: 14px;">$1</h4>')
-        .replace(/^## (.*$)/gim, '<h3 style="margin: 10px 0 4px 0; color: #38bdf8; font-size: 15px;">$1</h3>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/\n/g, '<br>');
-    }
-
-    function appendMsg(text, sender) {
-      const box = document.getElementById('chatMessages');
-      const msg = document.createElement('div');
-      msg.className = 'msg msg-' + (sender === 'user' ? 'user' : 'bot');
-      msg.innerHTML = formatMarkdown(text);
-      box.appendChild(msg);
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function renderTutorResponse(res) {
-      appendMsg(res.message, 'bot');
-      const evidenceList = document.getElementById('evidenceList');
-      const badge = document.getElementById('groundingBadge');
-      evidenceList.replaceChildren();
-
-      if (res.evidence_cards && res.evidence_cards.length > 0) {
-        badge.style.display = 'inline-flex';
-        document.getElementById('evidenceCount').textContent = `${res.evidence_cards.length} cards`;
-        res.evidence_cards.forEach(card => {
-          const cDiv = document.createElement('div');
-          cDiv.className = 'evidence-card';
-          const tDiv = document.createElement('div');
-          tDiv.className = 'evidence-card-title';
-          tDiv.textContent = card.title || '';
-          const bDiv = document.createElement('div');
-          bDiv.className = 'evidence-card-content';
-          bDiv.textContent = card.content || '';
-          cDiv.append(tDiv, bDiv);
-          evidenceList.appendChild(cDiv);
-        });
-      } else {
-        badge.style.display = 'none';
-        document.getElementById('evidenceCount').textContent = '0 cards';
-        const emptyP = document.createElement('p');
-        emptyP.style.cssText = 'font-size: 12px; color: #64748b;';
-        emptyP.textContent = 'Response synthesized via general pedagogical guidance.';
-        evidenceList.appendChild(emptyP);
-      }
-
-      if (res.misconception) {
-        const valMisc = document.getElementById('valMisconceptions');
-        if (valMisc) valMisc.textContent = res.misconception;
-        const valAct = document.getElementById('valAction');
-        if (valAct) valAct.textContent = "Remediate: " + res.misconception;
-      }
-    }
-
-    function simulateResponse(text) {
-      renderTutorResponse({
-        message: "Gayatri desktop runtime connection required for interactive pedagogical inference.",
-        evidence_cards: []
-      });
-    }
-
-    function clearChat() {
-      const box = document.getElementById('chatMessages');
-      const hName = document.getElementById('headerCourseName');
-      const title = hName ? hName.textContent : 'Course';
-      box.innerHTML = `<div class="msg msg-bot">Session context refreshed for <strong>${escapeHTML(title)}</strong>. What would you like to explore?</div>`;
-      document.getElementById('evidenceList').innerHTML = '<p style="font-size: 12px; color: #64748b;">Submit a query to inspect real-time RAG grounding cards and source citations.</p>';
-      document.getElementById('groundingBadge').style.display = 'none';
-    }
-
-    function refreshAnalytics(courseId = currentCourseId) {
-      if (!window.bridge || typeof window.bridge.getAnalytics !== 'function') return;
-      window.bridge.getAnalytics(courseId, 'demo_student', function(payload) {
-        try {
-          const state = typeof payload === 'string' ? JSON.parse(payload) : payload;
-          document.getElementById('valMastery').innerText = `${Math.round(state.overall_mastery * 100)}%`;
-          const course = coursesData.find(item => item.id === courseId);
-          document.getElementById('valSubject').innerText = course ? course.code : courseId;
-          document.getElementById('valMisconceptions').innerText = `${(state.recent_misconceptions || []).length} Detected`;
-          document.getElementById('valAction').innerText = state.recommended_next_action || 'Continue guided practice';
-
-          const breakdown = document.getElementById('masteryBreakdown');
-          breakdown.replaceChildren();
-          const topics = Object.entries(state.topic_mastery || {});
-          if (topics.length === 0) {
-            const empty = document.createElement('p');
-            empty.innerText = 'No topic-level mastery data yet.';
-            breakdown.appendChild(empty);
-          }
-          topics.forEach(([topic, score]) => {
-            const row = document.createElement('div');
-            const label = document.createElement('div');
-            label.style.cssText = 'display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;';
-            const name = document.createElement('span');
-            name.innerText = topic;
-            const value = document.createElement('span');
-            value.innerText = `${Math.round(score * 100)}%`;
-            label.append(name, value);
-            const track = document.createElement('div');
-            track.style.cssText = 'height:6px;background:#0f172a;border-radius:3px;overflow:hidden;';
-            const bar = document.createElement('div');
-            bar.style.cssText = `width:${Math.max(0, Math.min(100, score * 100))}%;height:100%;background:#27c93f;`;
-            track.appendChild(bar);
-            row.append(label, track);
-            breakdown.appendChild(row);
-          });
-        } catch (error) {
-          console.error('Could not render mastery analytics:', error);
-        }
-      });
-    }
-
-    function uploadCurriculum() {
-      const status = document.getElementById('ingestStatus');
-      if (!window.bridge || typeof window.bridge.selectAndUploadCurriculum !== 'function') {
-        status.style.color = '#f5c542';
-        status.innerText = 'Curriculum upload is available in the desktop app.';
-        return;
-      }
-
-      status.style.color = '#94a3b8';
-      status.innerText = 'Choose a local curriculum document to index...';
-      window.bridge.selectAndUploadCurriculum(currentCourseId, function(payload) {
-        try {
-          const result = typeof payload === 'string' ? JSON.parse(payload) : payload;
-          if (result.cancelled) {
-            status.innerText = 'Upload cancelled.';
-          } else if (result.success) {
-            status.style.color = '#27c93f';
-            status.innerText = `Indexed ${result.chunks_indexed} cards from ${result.filename} into ${currentCourseId}.`;
-          } else {
-            status.style.color = '#e94560';
-            status.innerText = result.message || 'The document could not be indexed.';
-          }
-        } catch (error) {
-          status.style.color = '#e94560';
-          status.innerText = 'The upload result could not be read.';
-        }
-      });
-    }
-
-    function startGuidedShowcase() {
-      selectCourse('engineering_mathematics');
-      setTimeout(() => {
-        document.getElementById('chatInput').value = "Explain first-order differential equations";
-        sendMessage();
-      }, 400);
-    }
-
-    // Window controls
-    function minWindow() { if (window.bridge) window.bridge.minimizeWindow(); }
-    function maxWindow() { if (window.bridge) window.bridge.maximizeWindow(); }
-    function closeWindow() { if (window.bridge) window.bridge.closeWindow(); }
-
-    // Init WebChannel
-    window.onload = function() {
-      renderCourses();
-      if (typeof QWebChannel !== 'undefined' && typeof qt !== 'undefined') {
-        new QWebChannel(qt.webChannelTransport, function(channel) {
-          window.bridge = channel.objects.bridge;
-          window.bridge.listCourses(function(payload) {
-            try {
-              coursesData = typeof payload === 'string' ? JSON.parse(payload) : payload;
-              const initialCourse = coursesData.find(course => course.code === 'MATH201') || coursesData[0];
-              if (initialCourse) {
-                currentCourseId = initialCourse.id;
-                document.getElementById('headerCourseName').innerText = initialCourse.title;
-                document.getElementById('chatCourseTitle').innerText = initialCourse.title;
-                document.getElementById('welcomeCourseName').innerText = initialCourse.title;
-                document.getElementById('valSubject').innerText = initialCourse.code;
-                renderCourses();
-                refreshAnalytics(currentCourseId);
-              }
-            } catch (error) {
-              console.error('Could not load courses from the desktop bridge:', error);
-            }
-          });
-        });
-      }
-    };
-  </script>
+  <script src="app.js"></script>
 
   <!-- Demo Video Dynamic Caption Overlay -->
-  <div id="demo-caption-bar" class="demo-caption-bar hidden">
+  <div id="demo-caption-bar" class="demo-caption-bar hidden" aria-hidden="true">
     <div class="caption-pulse"></div>
     <div id="demo-caption-text" class="caption-text">Platform Initialized</div>
   </div>

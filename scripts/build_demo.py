@@ -25,7 +25,8 @@ def clean_build_artifacts():
 
 def compile_curriculum_container():
     print("[2/6] Compiling/verifying institutional curriculum in authenticated cryptographic container (courses.dat)...")
-    from central_platform.courses.packer import compile_curriculum_container as compile_fn, load_curriculum_container, MAGIC_HEADER, CONTAINER_VERSION
+    from central_platform.courses.packer import CONTAINER_VERSION, MAGIC_HEADER, load_curriculum_container
+    from central_platform.courses.packer import compile_curriculum_container as compile_fn
     courses_dir = DEMO_DATA_DIR / "courses"
     container_file = DEMO_DATA_DIR / "courses.dat"
     if courses_dir.exists():
@@ -100,12 +101,25 @@ def audit_anti_reverse_engineering():
             raise AssertionError(f"SECURITY VIOLATION: Sensitive pedagogical pattern found in binary: {pattern.decode('utf-8')}")
     print("      [AUDIT PASSED] Zero proprietary pedagogical prompt literals in compiled binary.")
 
-    # 4. Minify UI index.html in bundle
+    # 4. Minify UI assets in bundle (strip comments; markup + stylesheet only)
+    #    app.js is intentionally left verbatim: regex minification of JS can
+    #    corrupt string literals, and it must stay readable for template edits.
+    stripped_assets = 0
     bundle_ui = bundle_dir / "app" / "ui" / "index.html"
     if bundle_ui.exists():
         raw_html = bundle_ui.read_text(encoding="utf-8")
         minified = re.sub(r"<!--.*?-->", "", raw_html, flags=re.DOTALL)
         bundle_ui.write_text(minified, encoding="utf-8")
+        stripped_assets += 1
+
+    bundle_css = bundle_dir / "app" / "ui" / "styles.css"
+    if bundle_css.exists():
+        raw_css = bundle_css.read_text(encoding="utf-8")
+        stripped_css = re.sub(r"/\*.*?\*/", "", raw_css, flags=re.DOTALL)
+        bundle_css.write_text(stripped_css, encoding="utf-8")
+        stripped_assets += 1
+
+    if stripped_assets:
         print("      [AUDIT PASSED] Release UI assets minified and stripped of comments.")
 
     # 5. Add convenient launcher batch wrapper calling compiled Gayatri.exe

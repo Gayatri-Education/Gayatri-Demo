@@ -1,7 +1,8 @@
 """Security Audit: Secrets Detection, Token Scans, and Permission Verification."""
 import re
-from pathlib import Path
+
 from core.config import BASE_DIR
+
 
 def test_zero_hardcoded_secrets_and_api_keys():
     """Scans all source code, markdown, and config files for secrets and API tokens."""
@@ -24,7 +25,7 @@ def test_zero_hardcoded_secrets_and_api_keys():
         if file_path.is_file() and file_path.suffix in target_extensions:
             if any(ex in file_path.parts for ex in excluded_dirs):
                 continue
-            
+
             content = file_path.read_text(encoding="utf-8", errors="replace")
             for pat in secret_patterns:
                 matches = pat.findall(content)

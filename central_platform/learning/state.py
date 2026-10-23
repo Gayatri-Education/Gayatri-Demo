@@ -5,7 +5,6 @@ import json
 import logging
 import sqlite3
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from central_platform.models.schema import LearningEvent, MasteryState
 from core.config import DATA_DIR
@@ -16,7 +15,7 @@ logger = logging.getLogger("gayatri.central_platform.learning")
 class LearningStateManager:
     """Tracks learner cognitive state, topic mastery, and learning trajectory."""
 
-    def __init__(self, db_path: Optional[Path] = None) -> None:
+    def __init__(self, db_path: Path | None = None) -> None:
         self.db_path = db_path or (DATA_DIR / "learner_state.sqlite")
         self._init_db()
 
@@ -104,7 +103,7 @@ class LearningStateManager:
             topic_val = getattr(event, "topic_id", None) or event.module_id
 
             cursor.execute("""
-                INSERT INTO learning_events 
+                INSERT INTO learning_events
                 (id, student_id, course_id, module_id, topic_id, prompt, response, action, misconception, correctness, timestamp)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """, (
@@ -169,7 +168,7 @@ class LearningStateManager:
                 current.recommended_next_action = "Continue guided practice"
 
             cursor.execute("""
-                INSERT OR REPLACE INTO mastery 
+                INSERT OR REPLACE INTO mastery
                 (student_id, course_id, overall_mastery, topic_mastery, weak_topics, recent_misconceptions, recommended_action)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
             """, (

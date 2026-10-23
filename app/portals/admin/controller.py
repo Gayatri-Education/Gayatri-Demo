@@ -1,10 +1,12 @@
 """Gayatri AI Platform — Institution Admin Controller (Phase 7 Preview)."""
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any
+
 from central_platform.courses.service import CourseService
 from central_platform.rag.service import RAGService
 from core.config import APP_VERSION, LOOPBACK_HOST
+
 
 class AdminPortalController:
     """Provides institutional governance, course catalog status, and knowledge indexing overview."""
@@ -13,7 +15,7 @@ class AdminPortalController:
         self.course_service = course_service
         self.rag_service = rag_service
 
-    def get_system_topology(self) -> Dict[str, Any]:
+    def get_system_topology(self) -> dict[str, Any]:
         courses = self.course_service.list_courses(include_optional=True)
         catalog_summary = []
         total_cards = 0

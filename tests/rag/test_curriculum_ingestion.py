@@ -1,8 +1,9 @@
 """RAG Bring Your Curriculum and Document Ingestion Tests."""
-import pytest
 from pathlib import Path
-from central_platform.rag.service import RAGService
+
 from central_platform.rag.security import RAGSecuritySanitizer
+from central_platform.rag.service import RAGService
+
 
 def test_custom_curriculum_document_ingestion():
     rag = RAGService()

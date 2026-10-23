@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, cast
 
 from central_platform.models.schema import PedagogicalAction, RAGChunk
 from core.obfuscation import dec_str
@@ -72,34 +72,55 @@ _RAW_RUBRICS = [
 class EvaluationResult:
     """Encapsulates the complete evaluation of a student turn."""
     action: PedagogicalAction
-    misconception: Optional[str] = None
-    feedback: Optional[str] = None
-    correctness: Optional[bool] = None
-    module_id: Optional[str] = None
-    topic_name: Optional[str] = None
+    misconception: str | None = None
+    feedback: str | None = None
+    correctness: bool | None = None
+    module_id: str | None = None
+    topic_name: str | None = None
 
     def __iter__(self):
         """Allows unpacking as (action, misconception, feedback) for backwards compatibility."""
         return iter((self.action, self.misconception, self.feedback))
 
 
+def _decode_rule(rule: tuple[bytes, ...]) -> tuple[str, str, str, str, str]:
+    """Decodes a 5-part obfuscated misconception rule into plaintext strings.
+
+    Module-level helper: class-body list comprehensions execute in an isolated
+    scope where class-level names are not visible, and the class itself is not
+    yet bound during attribute initialization.
+    """
+    return (
+        dec_str(rule[0]),
+        dec_str(rule[1]),
+        dec_str(rule[2]),
+        dec_str(rule[3]),
+        dec_str(rule[4]),
+    )
+
+
+def _decode_bytes(value: object) -> str:
+    """Type-safe wrapper: rubric dict values are raw bytes at runtime."""
+    return dec_str(cast("bytes", value))
+
+
 class NextActionEngine:
     """Evaluates student inputs, diagnoses conceptual misconceptions, and determines next action."""
 
     # Dynamic in-memory deobfuscation of proprietary rules and answer rubrics
-    MISCONCEPTION_RULES: List[Tuple[str, str, str, str, str]] = [
-        tuple(dec_str(x) for x in rule) for rule in _RAW_MISCONCEPTIONS
+    MISCONCEPTION_RULES: list[tuple[str, str, str, str, str]] = [
+        _decode_rule(rule) for rule in _RAW_MISCONCEPTIONS
     ]
 
-    ANSWER_RUBRICS: List[Dict[str, Any]] = [
+    ANSWER_RUBRICS: list[dict[str, Any]] = [
         {
-            "course_id": dec_str(r["course_id"]),
-            "module_id": dec_str(r["module_id"]),
-            "topic": dec_str(r["topic"]),
-            "correct_patterns": [dec_str(p) for p in r["correct_patterns"]],
-            "incorrect_patterns": [dec_str(p) for p in r["incorrect_patterns"]],
-            "correct_feedback": dec_str(r["correct_feedback"]),
-            "incorrect_feedback": dec_str(r["incorrect_feedback"]),
+            "course_id": _decode_bytes(r["course_id"]),
+            "module_id": _decode_bytes(r["module_id"]),
+            "topic": _decode_bytes(r["topic"]),
+            "correct_patterns": [_decode_bytes(p) for p in r["correct_patterns"]],
+            "incorrect_patterns": [_decode_bytes(p) for p in r["incorrect_patterns"]],
+            "correct_feedback": _decode_bytes(r["correct_feedback"]),
+            "incorrect_feedback": _decode_bytes(r["incorrect_feedback"]),
         }
         for r in _RAW_RUBRICS
     ]
@@ -109,7 +130,7 @@ class NextActionEngine:
         cls,
         prompt: str,
         course_id: str = "",
-        evidence_cards: Optional[List[RAGChunk]] = None
+        evidence_cards: list[RAGChunk] | None = None
     ) -> EvaluationResult:
         """Comprehensive evaluation of a student turn into action, correctness, and module context."""
         lower = prompt.lower().strip()
@@ -194,7 +215,7 @@ class NextActionEngine:
         )
 
     @classmethod
-    def evaluate_response(cls, prompt: str) -> Tuple[PedagogicalAction, Optional[str], Optional[str]]:
+    def evaluate_response(cls, prompt: str) -> tuple[PedagogicalAction, str | None, str | None]:
         """Backwards-compatible wrapper returning (action, misconception, feedback)."""
         result = cls.evaluate_turn(prompt)
         return (result.action, result.misconception, result.feedback)

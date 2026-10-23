@@ -3,11 +3,11 @@
 <div align="center">
   <img src="gai3.png" alt="Gayatri AI Logo" width="130" />
   <h3>Course-Independent Socratic Tutoring Grounded in Institution Knowledge</h3>
-  <p><b>A Comprehensive Institutional Demonstration Release (v4.0.0)</b></p>
+  <p><b>A Comprehensive Institutional Demonstration Release (v4.0.1)</b></p>
   <p><i>This project has been developed under Dbert Internship Program. (<a href="https://dbert.online">dbert.online</a>)</i></p>
 
   <p>
-    <a href="#-release-artifacts"><img src="https://img.shields.io/badge/Release-v4.0.0%20Platform%20Edition-e94560.svg" alt="Release v4.0.0" /></a>
+    <a href="#-whats-new-in-v401--engineering--trust-hardening"><img src="https://img.shields.io/badge/Release-v4.0.1%20Engineering%20Edition-e94560.svg" alt="Release v4.0.1" /></a>
     <img src="https://img.shields.io/badge/Inference-100%25%20Offline%20(Local)-success.svg" alt="100% Offline" />
     <img src="https://img.shields.io/badge/Security-Zero%20Data%20Egress-blue.svg" alt="Zero Data Egress" />
     <img src="https://img.shields.io/badge/Networking-Loopback%20(127.0.0.1)%20Only-teal.svg" alt="Loopback Only" />
@@ -29,6 +29,24 @@ Gayatri solves this through localized, course-independent neural and symbolic in
 - **Adaptive Socratic Pedagogy:** Guides students through analogies, graduated hints, and misconception diagnostics without premature answer disclosure.
 - **Bring Your Curriculum:** Institutions can upload PDF, DOCX, or text notes to create instant custom knowledge sandboxes.
 - **Absolute Data Sovereignty:** Operates 100% offline with strict loopback binding (`127.0.0.1`), zero telemetry, and zero cloud data egress.
+
+---
+
+## 🆕 What's New in v4.0.1 — Engineering & Trust Hardening
+
+The pedagogical product behavior of v4.0.0 is unchanged; this revision hardens the runtime, the UI protocol, and the engineering practices. Full technical detail in [`docs/ENGINEERING_IMPROVEMENTS_v4.0.1.md`](docs/ENGINEERING_IMPROVEMENTS_v4.0.1.md).
+
+| Change | What it means |
+|---|---|
+| **Non-blocking chat bridge** | Every tutor turn and curriculum ingestion runs on a Qt thread pool: the window never freezes, and the chat shows a live "Gayatri is thinking…" state. Results stream back over dedicated signals. |
+| **Structured error envelopes** | Internal exceptions never reach the student UI. Errors surface as friendly messages with log-correlation references (`invalid_request` / `resource_missing` / `forbidden` / `internal_error`). |
+| **Answer-leakage guardrail** | The platform's central Socratic promise — *never disclose the final answer* — is now enforced in code: during evaluation/remediation turns, card-sourced final answers are withheld with a guided reinterpretation, and 10 dedicated tests pin the invariant. |
+| **Honest retrieval grounding** | Query-side stopword filtering eliminates fabricated grounding: off-course questions (e.g. *"what is microprocessor ?"* in Digital Electronics) no longer surface irrelevant cards as "grounded evidence." |
+| **Guided discovery on misses** | When a query misses the knowledge base, the tutor enumerates the topics the course genuinely covers and points to the **Bring Curriculum** upload flow — no repetitive dead ends. |
+| **Frontend decomposition** | 953-line monolithic `index.html` split into markup, `styles.css` (design tokens), and `app.js` — hardening-tested for injection safety. |
+| **Canonical packaging + CI** | `pyproject.toml` (verified editable installs) and GitHub Actions CI on Windows runners: **ruff** lint, **mypy** type check, **pytest** with coverage — the full pipeline runs green locally with the same three commands. |
+
+**Verification:** `ruff check .` → **mypy** → **pytest** — 105 tests (up from 83 in v4.0.0), all green. See [`docs/UI_REFACTOR_v4.0.1.md`](docs/UI_REFACTOR_v4.0.1.md) for the frontend split.
 
 ---
 
@@ -124,7 +142,7 @@ Upload custom syllabus notes or lecture handouts (PDF/DOCX/TXT). The platform ex
 |---|---|---|
 | `Gayatri_Adaptive_Learning_Platform_v4.0.0_Setup.exe` | **Recommended:** Standalone Windows installer (**No Python required**). Self-contained single executable setup. | `D114903E06CFBFAF997736AE4CF071D37C1A73F8A3349D729F4F4897FA3643F0` |
 | `Gayatri_Adaptive_Learning_Platform_v4.0.0_Portable.zip` | Standalone portable bundle (**No Python required**). Double-click `Gayatri_Launcher.bat` or `Gayatri.exe`. | `DB5A9FF381F097847CB88C828AE32431078C9C5657F8E301413000F758EBB886` |
-| Developer Source Checkout | Requires Python 3.10+, pip dependencies. Follow [`GETTING_STARTED_GUIDE.md`](GETTING_STARTED_GUIDE.md) to run `python -m app.main`. | GitHub Repository HEAD |
+| Developer Source Checkout | Requires Python 3.10+, pip dependencies. Follow [`GETTING_STARTED_GUIDE.md`](GETTING_STARTED_GUIDE.md) to run `python -m app.main`. Repository HEAD tracks **v4.0.1** (engineering revision; see [What's New](#-whats-new-in-v401--engineering--trust-hardening)). | GitHub Repository HEAD |
 
 ---
 
@@ -147,4 +165,5 @@ This project has been developed under the **Dbert Internship Program** ([dbert.o
 
 - **Authoritative Release Contract:** `DEMO_RELEASE_CONTRACT.md` (Commit: `eee87194be0e69fa0f11923d2a59869f0f215816`)
 - **Release Documentation:** See [`RELEASE_NOTES_v4.0.0.md`](RELEASE_NOTES_v4.0.0.md) and [`INSTITUTION_DEMO_GUIDE.md`](INSTITUTION_DEMO_GUIDE.md).
+- **v4.0.1 Engineering Change Record:** [`docs/ENGINEERING_IMPROVEMENTS_v4.0.1.md`](docs/ENGINEERING_IMPROVEMENTS_v4.0.1.md) (root-cause analyses and measured evidence) and [`docs/UI_REFACTOR_v4.0.1.md`](docs/UI_REFACTOR_v4.0.1.md).
 - **Demonstration Walkthrough Video:** Available in [`demo_video/`](demo_video/).

@@ -46,7 +46,7 @@ def verify_environment_integrity() -> bool:
 
 def enforce_runtime_security() -> bool:
     """Enforces anti-tamper and anti-debugging protection in production distributions.
-    
+
     Returns True if clean, or aborts/returns False if tampering or debugging detected.
     """
     # Only enforce strict termination when running packaged / frozen distribution
