@@ -34,6 +34,9 @@ node_modules/
 data/*.db
 data/**/*.db
 data/uploads/
+data/embeddings/
+data/*.npz
+data/*.sqlite*
 logs/
 models/
 !/central_platform/models/
@@ -96,3 +99,9 @@ PRIVATE_WORK/
 # Raw course authoring assets (compiled into authenticated courses.dat)
 demo_data/courses/
 
+.venv/
+.pytest_cache/
+.venv/
+.pytest_cache/
+__pycache__/
+.env

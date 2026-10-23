@@ -1,4 +1,4 @@
-﻿"""Gayatri AI Platform — Core Configuration (v4.0.0 Multi-Course Demo)."""
+"""Gayatri AI Platform — Core Configuration (v4.0.0 Multi-Course Demo)."""
 from __future__ import annotations
 
 import os
@@ -41,6 +41,14 @@ MAX_CHUNKS_PER_DOCUMENT = 200
 DEFAULT_CHUNK_SIZE = 500
 CHUNK_OVERLAP = 50
 
+# Hybrid RAG & Semantic Retrieval Configuration
+RAG_RETRIEVAL_MODE = os.environ.get("GAYATRI_RETRIEVAL_MODE", "hybrid").lower()
+RAG_RRF_K = int(os.environ.get("GAYATRI_RRF_K", "60"))
+RAG_SEMANTIC_MIN_SCORE = float(os.environ.get("GAYATRI_SEMANTIC_MIN_SCORE", "0.15"))
+EMBEDDING_MODEL_DIR = Path(os.environ.get("GAYATRI_EMBEDDING_MODEL_PATH", BASE_DIR / "models" / "all-MiniLM-L6-v2"))
+EMBEDDINGS_CACHE_DIR = DATA_DIR / "embeddings"
+
 # Ensure data directories exist
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+EMBEDDINGS_CACHE_DIR.mkdir(parents=True, exist_ok=True)

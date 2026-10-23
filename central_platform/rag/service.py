@@ -1,4 +1,9 @@
-"""Gayatri AI Platform - Scoped RAG Service with Strict Course Isolation."""
+"""Gayatri AI Platform - Scoped Hybrid RAG Service with Strict Course Isolation.
+
+Combines BM25 keyword retrieval and local dense semantic vector retrieval via
+Reciprocal Rank Fusion (RRF), while guaranteeing course-partitioned knowledge
+boundaries and 100% offline air-gapped execution.
+"""
 from __future__ import annotations
 
 import json
@@ -11,11 +16,22 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set
 
 from central_platform.models.schema import RAGChunk
+from central_platform.rag.fusion import reciprocal_rank_fusion
 from central_platform.rag.parsers import DocumentParserRouter
 from central_platform.rag.security import RAGSecuritySanitizer
-from core.config import COURSES_DIR, COURSES_CONTAINER_FILE, DEFAULT_CHUNK_SIZE, MAX_CHUNKS_PER_DOCUMENT, RAG_TOP_K
+from central_platform.rag.semantic import LocalEmbeddingModel, LocalSemanticRetriever
+from core.config import (
+    COURSES_CONTAINER_FILE,
+    COURSES_DIR,
+    DEFAULT_CHUNK_SIZE,
+    MAX_CHUNKS_PER_DOCUMENT,
+    RAG_RETRIEVAL_MODE,
+    RAG_RRF_K,
+    RAG_TOP_K,
+)
 
 logger = logging.getLogger("gayatri.central_platform.rag")
+
 
 class BM25Retriever:
     """Lightweight in-memory BM25 ranker for atomic concept cards."""
@@ -82,19 +98,32 @@ class BM25Retriever:
 
 
 class RAGService:
-    """Manages course-partitioned knowledge indices and document ingestion."""
+    """Manages course-partitioned knowledge indices and document ingestion (Hybrid RAG)."""
 
-    def __init__(self, courses_dir: Optional[Path] = None, container_file: Optional[Path] = None) -> None:
+    def __init__(
+        self,
+        courses_dir: Optional[Path] = None,
+        container_file: Optional[Path] = None,
+        retrieval_mode: Optional[str] = None,
+        embedding_model: Optional[LocalEmbeddingModel] = None,
+        rrf_k: Optional[int] = None,
+    ) -> None:
         self.courses_dir = courses_dir or COURSES_DIR
         self.container_file = container_file or COURSES_CONTAINER_FILE
+        self.retrieval_mode = (retrieval_mode or RAG_RETRIEVAL_MODE).lower()
+        self.rrf_k = rrf_k if rrf_k is not None else RAG_RRF_K
+        self.embedding_model = embedding_model or LocalEmbeddingModel()
+
         self._course_indices: Dict[str, BM25Retriever] = {}
+        self._course_semantic_indices: Dict[str, LocalSemanticRetriever] = {}
         self._course_chunks: Dict[str, List[RAGChunk]] = {}
         self._id_alias: Dict[str, str] = {}
         self.reload_all_courses()
 
     def reload_all_courses(self) -> None:
-        """Loads and builds isolated BM25 indices for every course."""
+        """Loads and builds isolated BM25 and Semantic indices for every course."""
         self._course_indices.clear()
+        self._course_semantic_indices.clear()
         self._course_chunks.clear()
         self._id_alias.clear()
 
@@ -116,13 +145,23 @@ class RAGService:
                         item_copy["course_id"] = course_id
                         chunks.append(RAGChunk(**item_copy))
 
-                    retriever = BM25Retriever(chunks)
+                    bm25_retriever = BM25Retriever(chunks)
+                    sem_retriever = LocalSemanticRetriever(
+                        chunks=chunks,
+                        course_id=course_id,
+                        embedding_model=self.embedding_model,
+                    )
+
                     self._course_chunks[course_id] = chunks
-                    self._course_indices[course_id] = retriever
+                    self._course_indices[course_id] = bm25_retriever
+                    self._course_semantic_indices[course_id] = sem_retriever
+
                     if folder_name != course_id:
                         self._course_chunks[folder_name] = chunks
-                        self._course_indices[folder_name] = retriever
-                logger.info("Loaded %d courses into RAG from binary container: %s", len(bundle), self.container_file)
+                        self._course_indices[folder_name] = bm25_retriever
+                        self._course_semantic_indices[folder_name] = sem_retriever
+
+                logger.info("Loaded %d courses into Hybrid RAG from binary container: %s", len(bundle), self.container_file)
                 return
             except Exception as exc:
                 logger.warning("Failed loading courses.dat into RAG, falling back to directory: %s", exc)
@@ -144,7 +183,7 @@ class RAGService:
                                 course_id = c_data["id"]
                     except Exception:
                         pass
-                
+
                 self._id_alias[folder_name] = course_id
                 self._id_alias[course_id] = course_id
                 self._load_course_cards(course_folder, course_id, folder_name)
@@ -164,34 +203,101 @@ class RAGService:
                 except Exception as exc:
                     logger.error("Failed to parse RAG cards from %s: %s", file_path, exc)
 
-        retriever = BM25Retriever(chunks)
+        bm25_retriever = BM25Retriever(chunks)
+        sem_retriever = LocalSemanticRetriever(
+            chunks=chunks,
+            course_id=course_id,
+            embedding_model=self.embedding_model,
+        )
+
         self._course_chunks[course_id] = chunks
-        self._course_indices[course_id] = retriever
+        self._course_indices[course_id] = bm25_retriever
+        self._course_semantic_indices[course_id] = sem_retriever
+
         if folder_name != course_id:
             self._course_chunks[folder_name] = chunks
-            self._course_indices[folder_name] = retriever
+            self._course_indices[folder_name] = bm25_retriever
+            self._course_semantic_indices[folder_name] = sem_retriever
 
-    def query(self, query_text: str, course_id: str, top_k: int = RAG_TOP_K) -> List[RAGChunk]:
-        """Strict course-isolated retrieval. Returns only chunks belonging to course_id."""
-        retriever = self._course_indices.get(course_id)
-        if not retriever:
-            canonical = self._id_alias.get(course_id)
-            if canonical:
-                retriever = self._course_indices.get(canonical)
-        if not retriever:
+    def query(
+        self,
+        query_text: str,
+        course_id: str,
+        top_k: int = RAG_TOP_K,
+        mode: Optional[str] = None,
+    ) -> List[RAGChunk]:
+        """Strict course-isolated retrieval using BM25, Semantic, or Hybrid (RRF).
+
+        Args:
+            query_text: User search query or question.
+            course_id: Course identifier to restrict retrieval scope.
+            top_k: Number of ranked chunks to return.
+            mode: Optional per-query retrieval mode override ("hybrid", "bm25", "semantic").
+        """
+        canonical = self._id_alias.get(course_id, course_id)
+        active_mode = (mode or self.retrieval_mode).lower()
+
+        if not query_text or not query_text.strip():
             return []
 
-        results = retriever.query(query_text, top_k=top_k)
-        target_canonical = self._id_alias.get(course_id, course_id)
+        bm25_retriever = self._course_indices.get(canonical) or self._course_indices.get(course_id)
+        sem_retriever = self._course_semantic_indices.get(canonical) or self._course_semantic_indices.get(course_id)
 
+        if not bm25_retriever and not sem_retriever:
+            return []
+
+        # Candidate pool size for fusion
+        pool_size = max(top_k * 2, 6)
+
+        results: List[RAGChunk] = []
+
+        if active_mode == "bm25":
+            if bm25_retriever:
+                results = bm25_retriever.query(query_text, top_k=top_k)
+        elif active_mode == "semantic":
+            if sem_retriever:
+                results = sem_retriever.query(query_text, top_k=top_k)
+            else:
+                logger.warning("Semantic retriever not available for %s; falling back to BM25.", course_id)
+                if bm25_retriever:
+                    results = bm25_retriever.query(query_text, top_k=top_k)
+        else:
+            # Default: Hybrid RAG combining BM25 and Semantic via Reciprocal Rank Fusion
+            bm25_cands = bm25_retriever.query(query_text, top_k=pool_size) if bm25_retriever else []
+            sem_cands = sem_retriever.query(query_text, top_k=pool_size) if sem_retriever else []
+
+            if not sem_retriever:
+                logger.info("Semantic retriever unavailable for %s; using BM25 candidates only.", course_id)
+                results = bm25_cands[:top_k]
+            else:
+                results = reciprocal_rank_fusion(
+                    bm25_results=bm25_cands,
+                    semantic_results=sem_cands,
+                    k=self.rrf_k,
+                    top_k=top_k,
+                )
+
+        # Invariant Enforcement: Strict Course Isolation
+        target_canonical = self._id_alias.get(course_id, course_id)
         for r in results:
             card_canonical = self._id_alias.get(r.course_id, r.course_id)
             if card_canonical != target_canonical:
-                raise RuntimeError(f"RAG Isolation Violation: chunk {r.id} ({card_canonical}) leaked into {course_id} ({target_canonical})")
+                raise RuntimeError(
+                    f"RAG Isolation Violation: chunk {r.id} ({card_canonical}) leaked into {course_id} ({target_canonical})"
+                )
+
         return results
 
     def get_course_chunk_count(self, course_id: str) -> int:
         return len(self._course_chunks.get(course_id, []))
+
+    def rebuild_semantic_index(self, course_id: Optional[str] = None) -> None:
+        """Forces re-indexing of embeddings for a specific course or all courses."""
+        targets = [course_id] if course_id else list(self._course_semantic_indices.keys())
+        for cid in targets:
+            retriever = self._course_semantic_indices.get(cid)
+            if retriever:
+                retriever.rebuild_index()
 
     def ingest_document(self, file_path: Path, course_id: str) -> tuple[bool, str, int]:
         ok, reason = RAGSecuritySanitizer.validate_upload(file_path)
@@ -218,15 +324,29 @@ class RAGService:
                     course_id=canonical_id,
                     title=f"Custom: {title}",
                     content=para,
-                    tags=["custom_upload", RAGSecuritySanitizer.sanitize_filename(file_path.name)]
+                    tags=["custom_upload", RAGSecuritySanitizer.sanitize_filename(file_path.name)],
                 )
                 new_chunks.append(chunk)
 
+            # Update BM25 index
             existing = self._course_chunks.setdefault(canonical_id, [])
             existing.extend(new_chunks)
-            retriever = BM25Retriever(existing)
-            self._course_indices[canonical_id] = retriever
-            self._course_indices[course_id] = retriever
+            bm25_retriever = BM25Retriever(existing)
+            self._course_indices[canonical_id] = bm25_retriever
+            self._course_indices[course_id] = bm25_retriever
+
+            # Update Semantic index
+            sem_retriever = self._course_semantic_indices.get(canonical_id)
+            if sem_retriever:
+                sem_retriever.add_chunks(new_chunks)
+            else:
+                sem_retriever = LocalSemanticRetriever(
+                    chunks=existing,
+                    course_id=canonical_id,
+                    embedding_model=self.embedding_model,
+                )
+                self._course_semantic_indices[canonical_id] = sem_retriever
+                self._course_semantic_indices[course_id] = sem_retriever
 
             return True, f"Successfully indexed {len(new_chunks)} knowledge cards", len(new_chunks)
         except Exception as exc:
