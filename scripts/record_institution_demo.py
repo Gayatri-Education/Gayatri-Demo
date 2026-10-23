@@ -9,12 +9,14 @@ from __future__ import annotations
 import json
 import shutil
 import sys
+
 try:
     sys.stdout.reconfigure(encoding='utf-8')
 except Exception:
     pass
 import time
 from pathlib import Path
+
 from PIL import Image
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -27,6 +29,7 @@ from central_platform.courses.service import CourseService
 from central_platform.learning.state import LearningStateManager
 from central_platform.rag.service import RAGService
 from central_platform.tutor.orchestrator import TutorOrchestrator
+
 
 def record_institution_demo():
     print("[1/6] Initializing Backend Services for Institution Demo...")

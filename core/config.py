@@ -1,4 +1,4 @@
-"""Gayatri AI Platform — Core Configuration (v4.0.0 Multi-Course Demo)."""
+"""Gayatri AI Platform — Core Configuration (v4.0.1 Multi-Course Demo)."""
 from __future__ import annotations
 
 import os
@@ -18,7 +18,7 @@ UPLOADS_DIR = DEMO_DATA_DIR / "uploads"
 
 # Application Metadata
 APP_NAME = "Gayatri AI"
-APP_VERSION = "4.0.0"
+APP_VERSION = "4.0.1"
 WINDOW_TITLE = "Gayatri — AI-Powered Adaptive Learning Platform"
 
 # Window Geometry

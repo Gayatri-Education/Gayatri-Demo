@@ -1,10 +1,12 @@
 """Tutor Orchestrator, Adaptive Pedagogy, and Misconception Diagnosis Tests."""
 import pytest
+
 from central_platform.courses.service import CourseService
 from central_platform.learning.state import LearningStateManager
 from central_platform.models.schema import PedagogicalAction
 from central_platform.rag.service import RAGService
 from central_platform.tutor.orchestrator import TutorOrchestrator
+
 
 @pytest.fixture
 def orchestrator(tmp_path):
@@ -25,6 +27,30 @@ def test_socratic_explanation_flow(orchestrator):
     assert "First-Order Linear Ordinary Differential Equations" in resp.evidence_cards[0].title
     assert "Socratic Comprehension Check" in resp.message
     assert "?" in resp.message
+
+def test_ungrounded_turn_guides_toward_available_topics(orchestrator):
+    """Regression (v4.0.1 live-app feedback): a prompt that misses the corpus
+    ("what is ic ?" against Digital Electronics) must not return a repetitive
+    generic clarification. The reply enumerates the topics the course actually
+    covers and points to the Bring Curriculum flow — guided discovery."""
+    orchestrator.set_active_course("crs_digital_elec")
+    resp = orchestrator.process_turn("student_01", "what is ic ?")
+
+    assert resp.grounded is False
+    assert len(resp.evidence_cards) == 0
+    assert "What this course currently draws on:" in resp.message
+    assert "Universal Logic Gates" in resp.message      # real DE corpus topic
+    assert "Edge-Triggered Flip-Flops" in resp.message   # real DE corpus topic
+    assert "Bring Curriculum" in resp.message
+
+def test_get_course_topic_titles_exposes_corpus():
+    rag = RAGService()
+    titles = rag.get_course_topic_titles("crs_digital_elec")
+    assert len(titles) >= 4
+    assert any("Flip-Flops" in t for t in titles)
+    # Unknown course id: empty list, never an exception.
+    assert rag.get_course_topic_titles("crs_nonexistent_course") == []
+
 
 def test_misconception_detection_and_remediation(orchestrator):
     orchestrator.set_active_course("crs_digital_elec")

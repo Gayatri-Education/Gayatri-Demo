@@ -11,8 +11,7 @@ from __future__ import annotations
 
 import math
 import time
-from typing import Dict, List, NamedTuple
-import pytest
+from typing import NamedTuple
 
 from central_platform.rag.service import RAGService
 
@@ -20,11 +19,11 @@ from central_platform.rag.service import RAGService
 class BenchmarkQuery(NamedTuple):
     query: str
     course_id: str
-    expected_title_keywords: List[str]
+    expected_title_keywords: list[str]
     category: str  # "exact" or "paraphrase"
 
 
-EVALUATION_DATASET: List[BenchmarkQuery] = [
+EVALUATION_DATASET: list[BenchmarkQuery] = [
     # Engineering Mathematics (MATH201)
     BenchmarkQuery(
         query="first-order linear ordinary differential equations integrating factor",
@@ -108,12 +107,12 @@ EVALUATION_DATASET: List[BenchmarkQuery] = [
 ]
 
 
-def _is_relevant(chunk_title: str, expected_keywords: List[str]) -> bool:
+def _is_relevant(chunk_title: str, expected_keywords: list[str]) -> bool:
     t_lower = chunk_title.lower()
     return any(kw.lower() in t_lower for kw in expected_keywords)
 
 
-def _compute_ndcg(retrieved_relevance: List[int], k: int = 5) -> float:
+def _compute_ndcg(retrieved_relevance: list[int], k: int = 5) -> float:
     relevance = retrieved_relevance[:k]
     dcg = sum(rel / math.log2(idx + 2) for idx, rel in enumerate(relevance))
     ideal_relevance = sorted(retrieved_relevance, reverse=True)[:k]
@@ -121,7 +120,7 @@ def _compute_ndcg(retrieved_relevance: List[int], k: int = 5) -> float:
     return dcg / idcg if idcg > 0 else 0.0
 
 
-def evaluate_retrieval_mode(rag: RAGService, mode: str, k: int = 5) -> Dict[str, float]:
+def evaluate_retrieval_mode(rag: RAGService, mode: str, k: int = 5) -> dict[str, float]:
     recalls = []
     rr_scores = []
     ndcgs = []

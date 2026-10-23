@@ -1,19 +1,19 @@
 """Security and Anti-Reverse Engineering Verification Tests."""
 import sys
-from pathlib import Path
+
 import pytest
 
-from core.obfuscation import enc_str, dec_str
-from core.tamper import is_debugger_present, verify_environment_integrity, sanitize_runtime_arguments
+from central_platform.ai.adapters import _RAW_PROMPTS, SocraticInferenceEngine
 from central_platform.courses.packer import (
+    CONTAINER_VERSION,
+    MAGIC_HEADER,
     compile_curriculum_container,
     load_curriculum_container,
-    MAGIC_HEADER,
-    CONTAINER_VERSION,
 )
-from central_platform.learning.actions import NextActionEngine, _RAW_MISCONCEPTIONS, _RAW_RUBRICS
-from central_platform.ai.adapters import SocraticInferenceEngine, _RAW_PROMPTS
-from core.config import COURSES_CONTAINER_FILE
+from central_platform.learning.actions import _RAW_MISCONCEPTIONS, NextActionEngine
+from core.obfuscation import dec_str, enc_str
+from core.tamper import is_debugger_present, sanitize_runtime_arguments, verify_environment_integrity
+
 
 def test_obfuscation_codec_integrity():
     text = "Proprietary Socratic Remediation Template v4"
@@ -39,7 +39,7 @@ def test_misconception_rules_obfuscated_in_code():
     assert "Laplace Derivative Initial Value Omission" in tags
 
 def test_adapters_prompts_obfuscated_in_code():
-    for key, raw_val in _RAW_PROMPTS.items():
+    for _key, raw_val in _RAW_PROMPTS.items():
         assert b"NAND produces" not in raw_val
         assert b"integrating factor" not in raw_val
         assert b"De Morgan" not in raw_val

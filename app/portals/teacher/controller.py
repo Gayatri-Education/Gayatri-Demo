@@ -1,9 +1,11 @@
 """Gayatri AI Platform — Teacher Portal Controller (Phase 7 Preview)."""
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any
+
 from central_platform.courses.service import CourseService
 from central_platform.learning.state import LearningStateManager
+
 
 class TeacherPortalController:
     """Provides class-level aggregated metrics, misconception alerts, and intervention queue."""
@@ -12,20 +14,20 @@ class TeacherPortalController:
         self.course_service = course_service
         self.state_manager = state_manager
 
-    def get_cohort_summary(self, course_id: str = "crs_engg_math") -> Dict[str, Any]:
+    def get_cohort_summary(self, course_id: str = "crs_engg_math") -> dict[str, Any]:
         """Returns synthetic class cohort health and performance breakdown."""
         course = self.course_service.get_course(course_id)
         title = course.title if course else "Course"
 
         # Synthetic demonstration cohort for faculty presentation
-        synthetic_students = [
+        synthetic_students: list[dict[str, float | str]] = [
             {"id": "std_01", "name": "Aarav Sharma", "mastery": 0.82, "weak_area": "Laplace Derivatives", "status": "On Track"},
             {"id": "std_02", "name": "Diya Patel", "mastery": 0.64, "weak_area": "Inversion Laws", "status": "Needs Review"},
             {"id": "std_03", "name": "Rohan Iyer", "mastery": 0.91, "weak_area": "None", "status": "Excelling"},
             {"id": "std_04", "name": "Ananya Reddy", "mastery": 0.58, "weak_area": "Integrating Factors", "status": "Intervention Recommended"}
         ]
 
-        avg_mastery = round(sum(s["mastery"] for s in synthetic_students) / len(synthetic_students), 3)
+        avg_mastery = round(sum(float(s["mastery"]) for s in synthetic_students) / len(synthetic_students), 3)
 
         return {
             "course_id": course_id,

@@ -4,7 +4,6 @@ cannot execute or inject malicious HTML/JavaScript (Issue #9 fix verification).
 """
 from __future__ import annotations
 
-import html
 import re
 from pathlib import Path
 
@@ -77,16 +76,31 @@ def test_nested_markdown_with_xss_payload():
     assert "&lt;script&gt;alert(&#39;nested&#39;)&lt;/script&gt;" in rendered
 
 
-def test_evidence_card_dom_rendering_in_index_html():
-    index_html = Path("app/ui/index.html").read_text(encoding="utf-8")
+def test_evidence_card_dom_rendering_in_ui_script():
+    # JS was extracted from index.html into app.js (single-file refactor, v4.0.1)
+    app_js = Path("app/ui/app.js").read_text(encoding="utf-8")
     # Ensure innerHTML is NOT used for evidence card title/content
-    assert "cDiv.innerHTML = `" not in index_html
+    assert "cDiv.innerHTML = `" not in app_js
     # Ensure textContent is used for card rendering
-    assert "tDiv.textContent = card.title" in index_html
-    assert "bDiv.textContent = card.content" in index_html
+    assert "tDiv.textContent = card.title" in app_js
+    assert "bDiv.textContent = card.content" in app_js
 
 
-def test_escape_html_present_in_index_html():
+def test_escape_html_present_in_ui_script():
+    # JS was extracted from index.html into app.js (single-file refactor, v4.0.1)
+    app_js = Path("app/ui/app.js").read_text(encoding="utf-8")
+    assert "function escapeHTML(" in app_js
+    assert "escapeHTML(text)" in app_js or "escapeHTML(str)" in app_js
+
+
+def test_index_html_links_extracted_ui_assets():
+    """Guards the v4.0.1 UI refactor: index.html must reference the extracted
+    styles.css / app.js and no longer embed inline <style> or <script> logic."""
     index_html = Path("app/ui/index.html").read_text(encoding="utf-8")
-    assert "function escapeHTML(" in index_html
-    assert "escapeHTML(text)" in index_html or "escapeHTML(str)" in index_html
+    assert '<link rel="stylesheet" href="styles.css">' in index_html
+    assert '<script src="app.js">' in index_html
+    # No inline style or application-script blocks remain in the markup
+    assert "<style>" not in index_html
+    assert "function escapeHTML(" not in index_html
+    # The Qt WebChannel transport script may remain (library include, not app logic)
+    assert '<script src="qrc:///qtwebchannel/qwebchannel.js"></script>' in index_html

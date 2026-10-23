@@ -11,10 +11,9 @@ Features:
 from __future__ import annotations
 
 import hashlib
-import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+
 import numpy as np
 
 from central_platform.models.schema import RAGChunk
@@ -49,7 +48,7 @@ class DeterministicFallbackEmbedder:
 
     DIM = 384
 
-    def encode(self, texts: List[str]) -> np.ndarray:
+    def encode(self, texts: list[str]) -> np.ndarray:
         if not texts:
             return np.empty((0, self.DIM), dtype=np.float32)
 
@@ -78,7 +77,7 @@ class DeterministicFallbackEmbedder:
 class LocalEmbeddingModel:
     """Encapsulates local embedding model loading and inference."""
 
-    def __init__(self, model_dir: Optional[Path] = None) -> None:
+    def __init__(self, model_dir: Path | None = None) -> None:
         self.model_dir = model_dir or EMBEDDING_MODEL_DIR
         self._st_model = None
         self._fallback_embedder = DeterministicFallbackEmbedder()
@@ -123,7 +122,7 @@ class LocalEmbeddingModel:
             return self._st_model.get_sentence_embedding_dimension()
         return self._fallback_embedder.DIM
 
-    def encode_texts(self, texts: List[str]) -> np.ndarray:
+    def encode_texts(self, texts: list[str]) -> np.ndarray:
         """Encodes a batch of texts into L2-normalized float32 vectors."""
         if not texts:
             return np.empty((0, self.dimension), dtype=np.float32)
@@ -153,19 +152,19 @@ class LocalSemanticRetriever:
 
     def __init__(
         self,
-        chunks: List[RAGChunk],
+        chunks: list[RAGChunk],
         course_id: str,
-        embedding_model: Optional[LocalEmbeddingModel] = None,
-        cache_dir: Optional[Path] = None,
+        embedding_model: LocalEmbeddingModel | None = None,
+        cache_dir: Path | None = None,
         min_score: float = RAG_SEMANTIC_MIN_SCORE,
     ) -> None:
         self.course_id = course_id
-        self.chunks: List[RAGChunk] = list(chunks)
+        self.chunks: list[RAGChunk] = list(chunks)
         self.embedding_model = embedding_model or LocalEmbeddingModel()
         self.cache_dir = cache_dir or EMBEDDINGS_CACHE_DIR
         self.min_score = min_score
 
-        self.chunk_ids: List[str] = [c.id for c in self.chunks]
+        self.chunk_ids: list[str] = [c.id for c in self.chunks]
         self.embeddings: np.ndarray = np.empty((0, self.embedding_model.dimension), dtype=np.float32)
 
         self._build_or_load_index()
@@ -230,7 +229,7 @@ class LocalSemanticRetriever:
         except Exception as exc:
             logger.warning("Could not persist embedding cache to %s: %s", self._cache_path(), exc)
 
-    def add_chunks(self, new_chunks: List[RAGChunk]) -> None:
+    def add_chunks(self, new_chunks: list[RAGChunk]) -> None:
         """Appends new chunks and updates embedding index and cache."""
         if not new_chunks:
             return
@@ -259,7 +258,7 @@ class LocalSemanticRetriever:
         except Exception as exc:
             logger.warning("Failed updating embedding cache: %s", exc)
 
-    def query(self, query_text: str, top_k: int = RAG_TOP_K) -> List[RAGChunk]:
+    def query(self, query_text: str, top_k: int = RAG_TOP_K) -> list[RAGChunk]:
         """Runs cosine-similarity vector retrieval over course chunks."""
         if not self.chunks or self.embeddings.size == 0:
             return []
@@ -274,7 +273,7 @@ class LocalSemanticRetriever:
 
         # Rank indices
         ranked_indices = np.argsort(-scores)
-        results: List[RAGChunk] = []
+        results: list[RAGChunk] = []
 
         for idx in ranked_indices:
             score_val = float(scores[idx])

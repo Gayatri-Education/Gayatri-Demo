@@ -2,14 +2,14 @@
 from __future__ import annotations
 
 import logging
-from typing import Dict, List, Optional
+
 from central_platform.models.schema import PedagogicalAction, RAGChunk
 from core.obfuscation import dec_str
 
 logger = logging.getLogger("gayatri.central_platform.ai")
 
 # Obfuscated pedagogical prompts and reflection templates (anti-reverse engineering protection)
-_RAW_PROMPTS: Dict[str, bytes] = {
+_RAW_PROMPTS: dict[str, bytes] = {
     'nand_reflection': b"\x10\x06\x1eV\x0b_\xf2\xe8\xe7\xef\x82\xdd\xd8\xde\xcd\xff\xec\x9a\xbc\xc1\xa1\x81\x86\x88p+S9\x1d\x07\x1e\x15]-.q\x111\x16\x18\x00[\xc0\xa9\xad\xb7\xaf\x89\x8c\xc4\xd2\xa0\xbc\xef\xbf\xae\xc4\x9f\x9a\x9c h{alV^\x11WYf,:{#'4W\x19\xe4\xf8\xf6\xa5\x81\xfc\xc7\xd3\xcf\xa1\xad\xbd\xab\x85\xcb\xce\x82\x94b~1ujUY\x14O*,p>0\x13\t\x01\x0e\xe4\xec\xaf\xd8\xdc\xea\xef\x92\xd6\xb5\xb3\xbe\xa0\xa8\xc3\x88\x94\xc7",
     'demorgan_reflection': b'\x1f\x0c\x04\x02\x11\x1b\xe3\xff\xb4\xef\xd5\xc6\x90\xc4\xc9\xac\xb8\xb0\xb2\x84\x9b\xcf\x9f\x93${skAKBPPcb\x10xtF/]U\xa2\xc0\xf6\xb7\xfc\xca\xd8\xdb\x9a\xac\xbd\xbc\xa2\xfd\xaa\xa4\xa6\xd9bb.vpLYT\\\x13f%;,B\r\x1fW\x07\xea\xf9\xb3\xff\xd9\xd8\xdd\xd3\xce\xb7\xeb\xa6\xb1\x81\x93\xce\x82\x95wb1qqBDBR&<1;~\x0b\t\x14\x1b\xf5\xe1\xe0\xf8\xee\x9b',
     'laplace_reflection': b"\x0b\x0b\x13Q\x1c\x10\xe3\xfe\xb4\xef\xd0\xc8\xde\xc4\xd8\xaa\xbe\xbe\xb3\x8f\x8f\xcf\x97\xdd`n`pVFZ\\J&j86\x7f\x12\x04\x19\x1e\xa2\xfb\xf5\xe6\xeb\xcc\xde\xd6\x9a\xaa\xa6\xa0\xa1\xb4\x8a\x8c\xd2\x8dhb.fhB^T\x18P m 3\x07I\x03\x0e\r\xf1\xe9\xfe\xba\xc0\xdc\x8f\xc2\xd4\xa9\xae\xf2\xfd\x94\xc7\xd3\xd5\xcc'5",
@@ -37,11 +37,17 @@ class SocraticInferenceEngine:
         course_title: str,
         user_prompt: str,
         action: PedagogicalAction,
-        evidence_cards: List[RAGChunk],
-        misconception_feedback: Optional[str] = None,
-        evaluation_feedback: Optional[str] = None
+        evidence_cards: list[RAGChunk],
+        misconception_feedback: str | None = None,
+        evaluation_feedback: str | None = None,
+        available_topics: list[str] | None = None
     ) -> str:
-        """Generates grounded Socratic pedagogical responses with protected prompts."""
+        """Generates grounded Socratic pedagogical responses with protected prompts.
+
+        ``available_topics`` is set by the orchestrator on ungrounded turns:
+        the reply then enumerates the topics the course genuinely covers so a
+        missed query becomes guided discovery instead of a generic dead end.
+        """
         if action == PedagogicalAction.REMEDIATE and misconception_feedback:
             resp = [
                 f"### ⚠️ Misconception Identified in **{course_title}**\n\n",
@@ -94,4 +100,13 @@ class SocraticInferenceEngine:
 
         # Fallback when no direct knowledge cards matched
         template = cls._prompt("fallback_prefix")
-        return template.format(course_title=course_title, user_prompt=user_prompt)
+        message = template.format(course_title=course_title, user_prompt=user_prompt)
+        if available_topics:
+            topic_lines = "\n".join(f"- {title}" for title in available_topics)
+            message += (
+                "\n\n**What this course currently draws on:**\n"
+                f"{topic_lines}\n\n"
+                "Ask about any of these — or bring your own material with "
+                "**Bring Curriculum** and I will index it against these questions."
+            )
+        return message

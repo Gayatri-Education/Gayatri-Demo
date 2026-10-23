@@ -1,13 +1,16 @@
 """Unit tests for Curriculum Binary Container Serializer and Loader."""
-import pytest
 from pathlib import Path
+
+import pytest
+
 from central_platform.courses.packer import (
+    CONTAINER_VERSION,
+    MAGIC_HEADER,
     compile_curriculum_container,
     load_curriculum_container,
-    MAGIC_HEADER,
-    CONTAINER_VERSION,
 )
 from core.config import COURSES_CONTAINER_FILE
+
 
 def _make_sample_courses_dir(tmp_path: Path) -> Path:
     """Creates a temporary sample course directory for packaging tests."""

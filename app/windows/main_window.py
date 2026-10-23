@@ -1,8 +1,6 @@
 """Gayatri AI Platform — Frameless Main Window with WebEngine & WebChannel."""
 from __future__ import annotations
 
-import sys
-from pathlib import Path
 from PySide6.QtCore import Qt, QUrl
 from PySide6.QtGui import QColor, QIcon
 from PySide6.QtWebChannel import QWebChannel
@@ -16,6 +14,7 @@ from central_platform.learning.state import LearningStateManager
 from central_platform.rag.service import RAGService
 from central_platform.tutor.orchestrator import TutorOrchestrator
 from core.config import BASE_DIR, WINDOW_HEIGHT, WINDOW_MIN_HEIGHT, WINDOW_MIN_WIDTH, WINDOW_TITLE, WINDOW_WIDTH
+
 
 class SecureWebPage(QWebEnginePage):
     """Enforces navigation boundary: local and loopback assets only."""
@@ -35,7 +34,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(WINDOW_TITLE)
         self.resize(WINDOW_WIDTH, WINDOW_HEIGHT)
         self.setMinimumSize(WINDOW_MIN_WIDTH, WINDOW_MIN_HEIGHT)
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.Window)
 
         # Set App Icon
         icon_path = BASE_DIR / "gai3.png"
@@ -50,7 +49,7 @@ class MainWindow(QMainWindow):
 
         # Setup WebEngine & Secure Page
         self.web_view = QWebEngineView()
-        self.web_view.setContextMenuPolicy(Qt.NoContextMenu)
+        self.web_view.setContextMenuPolicy(Qt.ContextMenuPolicy.NoContextMenu)
         self.web_page = SecureWebPage()
         self.web_page.setBackgroundColor(QColor("#0f0f23"))
         self.web_view.setPage(self.web_page)
@@ -76,12 +75,12 @@ class MainWindow(QMainWindow):
         self._drag_pos = None
 
     def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             self._drag_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
             event.accept()
 
     def mouseMoveEvent(self, event):
-        if event.buttons() == Qt.LeftButton and self._drag_pos:
+        if event.buttons() == Qt.MouseButton.LeftButton and self._drag_pos:
             self.move(event.globalPosition().toPoint() - self._drag_pos)
             event.accept()
 

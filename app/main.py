@@ -1,7 +1,6 @@
 """Gayatri AI Platform — Application Main Entry Point."""
 from __future__ import annotations
 
-import os
 import sys
 from pathlib import Path
 
@@ -41,14 +40,12 @@ def check_startup() -> bool:
                 pass
 
         # 3. Core dependencies and platform services
-        import PySide6.QtWidgets
-        import PySide6.QtWebEngineWidgets
-        import pydantic
+
         from central_platform.courses.service import CourseService
         from central_platform.learning.state import LearningStateManager
         from central_platform.rag.service import RAGService
         from central_platform.tutor.orchestrator import TutorOrchestrator
-        
+
         cs = CourseService()
         rag = RAGService()
         sm = LearningStateManager()
@@ -88,6 +85,7 @@ def main() -> None:
             pass
 
     from PySide6.QtWidgets import QApplication
+
     from app.windows.main_window import MainWindow
 
     app = QApplication(sys.argv)

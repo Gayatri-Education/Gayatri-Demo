@@ -8,7 +8,7 @@ import logging
 import os
 import zlib
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 logger = logging.getLogger("gayatri.central_platform.courses.packer")
 
@@ -24,7 +24,7 @@ OBF_MASK = 0x5A
 
 def _get_container_seed() -> bytes:
     """Dynamically reconstructs cryptographic key material from non-contiguous byte constants.
-    
+
     Prevents static string extraction and signature harvesting in compiled binary distributions.
     """
     c1 = bytes([0x47, 0x59, 0x54, 0x52, 0x49, 0x5F, 0x41, 0x44, 0x41, 0x50, 0x54])
@@ -51,18 +51,18 @@ def _apply_keystream(data: bytes, enc_key: bytes, salt: bytes) -> bytes:
     for block_idx in range(num_blocks):
         counter_bytes = block_idx.to_bytes(8, byteorder="big")
         keystream.extend(hmac.digest(enc_key, salt + counter_bytes, "sha256"))
-    return bytes(b ^ k for b, k in zip(data, keystream[:len(data)]))
+    return bytes(b ^ k for b, k in zip(data, keystream[:len(data)], strict=True))
 
 
 def compile_curriculum_container(courses_dir: Path, output_file: Path) -> int:
     """Serializes all course folders, modules, and RAG knowledge cards into an authenticated binary container."""
-    bundle: Dict[str, Any] = {}
+    bundle: dict[str, Any] = {}
     if not courses_dir.exists():
         raise FileNotFoundError(f"Courses directory does not exist: {courses_dir}")
 
     for course_folder in courses_dir.iterdir():
         if course_folder.is_dir():
-            folder_data: Dict[str, Any] = {
+            folder_data: dict[str, Any] = {
                 "course": None,
                 "modules": [],
                 "cards": [],
@@ -111,7 +111,7 @@ def compile_curriculum_container(courses_dir: Path, output_file: Path) -> int:
     return len(bundle)
 
 
-def load_curriculum_container(container_file: Path) -> Dict[str, Any]:
+def load_curriculum_container(container_file: Path) -> dict[str, Any]:
     """Loads courses directly into memory from the authenticated container without writing files to disk."""
     if not container_file.exists():
         raise FileNotFoundError(f"Container file does not exist: {container_file}")
@@ -141,7 +141,7 @@ def load_curriculum_container(container_file: Path) -> Dict[str, Any]:
 
         compressed = _apply_keystream(ciphertext, enc_key, salt)
         raw_bytes = zlib.decompress(compressed)
-        bundle: Dict[str, Any] = json.loads(raw_bytes.decode("utf-8"))
+        bundle: dict[str, Any] = json.loads(raw_bytes.decode("utf-8"))
         return bundle
 
     # Legacy v1 fallback container format (single-byte XOR)

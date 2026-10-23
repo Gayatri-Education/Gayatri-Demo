@@ -4,20 +4,19 @@ from __future__ import annotations
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from central_platform.models.schema import Course, Module
-from core.config import COURSES_DIR, COURSES_CONTAINER_FILE
+from core.config import COURSES_CONTAINER_FILE, COURSES_DIR
 
 logger = logging.getLogger("gayatri.central_platform.courses")
 
 class CourseService:
     """Manages course catalogs, module dependencies, and course switching."""
 
-    def __init__(self, courses_dir: Optional[Path] = None, container_file: Optional[Path] = None) -> None:
+    def __init__(self, courses_dir: Path | None = None, container_file: Path | None = None) -> None:
         self.courses_dir = courses_dir or COURSES_DIR
         self.container_file = container_file or COURSES_CONTAINER_FILE
-        self._courses: Dict[str, Course] = {}
+        self._courses: dict[str, Course] = {}
         self.reload_courses()
 
     def reload_courses(self) -> None:
@@ -61,21 +60,21 @@ class CourseService:
                 modules_file = course_folder / "modules.json"
                 if course_file.exists():
                     try:
-                        with open(course_file, "r", encoding="utf-8-sig") as f:
+                        with open(course_file, encoding="utf-8-sig") as f:
                             data = json.load(f)
-                        
-                        modules: List[Module] = []
+
+                        loaded_modules: list[Module] = []
                         if modules_file.exists():
-                            with open(modules_file, "r", encoding="utf-8-sig") as mf:
+                            with open(modules_file, encoding="utf-8-sig") as mf:
                                 mod_data = json.load(mf)
-                                modules = [Module(**m) for m in mod_data]
-                        
+                                loaded_modules = [Module(**m) for m in mod_data]
+
                         course = Course(
                             id=data["id"],
                             code=data.get("code", ""),
                             title=data["title"],
                             description=data.get("description", ""),
-                            modules=modules,
+                            modules=loaded_modules,
                             is_active=data.get("is_active", True),
                             is_optional=data.get("is_optional", False)
                         )
@@ -86,7 +85,7 @@ class CourseService:
                     except Exception as exc:
                         logger.error("Failed to load course from %s: %s", course_folder, exc)
 
-    def list_courses(self, include_optional: bool = True) -> List[Course]:
+    def list_courses(self, include_optional: bool = True) -> list[Course]:
         """Returns unique registered courses."""
         seen = set()
         unique = []
@@ -97,11 +96,11 @@ class CourseService:
                     unique.append(c)
         return sorted(unique, key=lambda c: (c.is_optional, c.code))
 
-    def get_course(self, course_id: str) -> Optional[Course]:
+    def get_course(self, course_id: str) -> Course | None:
         """Retrieves a single course by its ID or folder name."""
         return self._courses.get(course_id)
 
-    def get_modules(self, course_id: str) -> List[Module]:
+    def get_modules(self, course_id: str) -> list[Module]:
         """Returns all modules for a course in curriculum order."""
         course = self.get_course(course_id)
         if not course:

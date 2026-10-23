@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List
+
 from central_platform.rag.cleaner import DocumentCleaner
+
 
 class DocumentParserRouter:
     """Routes files to appropriate safe text parsers."""
@@ -31,7 +32,7 @@ class DocumentParserRouter:
             import pypdf
             reader = pypdf.PdfReader(str(path))
             pages = []
-            for i, page in enumerate(reader.pages):
+            for _i, page in enumerate(reader.pages):
                 extracted = page.extract_text() or ""
                 pages.append(extracted)
             return DocumentCleaner.clean("\n".join(pages))

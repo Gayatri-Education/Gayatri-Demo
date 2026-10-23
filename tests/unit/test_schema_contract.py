@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import pytest
-from pydantic import ValidationError
 
 from central_platform.models.schema import (
     Course,
