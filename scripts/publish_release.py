@@ -5,7 +5,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DIST_DIR = BASE_DIR / "dist"
-CHECKSUM_LINE = re.compile(r"^([0-9a-fA-F]{64})\\s+\\*?(.+?)\\s*$")
+CHECKSUM_LINE = re.compile(r"^([0-9a-fA-F]{64})\s+\*?(.+?)\s*$")
 
 
 def verify_release_assets():
