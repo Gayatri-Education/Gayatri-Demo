@@ -654,24 +654,51 @@
     function renderCourses() {
       const grid = document.getElementById('courseGrid');
       grid.replaceChildren();
-      coursesData.forEach(c => {
+
+      coursesData.forEach(course => {
         const card = document.createElement('div');
-        card.className = 'course-card' + (c.id === currentCourseId ? ' active-card' : '');
-        card.innerHTML = `
-          <div class="course-header">
-            <span class="course-code">${escapeHTML(c.code)}</span>
-            ${c.is_optional ? '<span style="font-size:10px; color:#f5c542; background:rgba(245,197,66,0.1); padding:2px 6px; border-radius:4px;">Optional</span>' : ''}
-          </div>
-          <div class="course-title">${escapeHTML(c.title)}</div>
-          <div class="course-desc">${escapeHTML(c.description)}</div>
-          <div class="course-meta">
-            <span>📖 ${parseInt(c.module_count, 10) || 0} Modules</span>
-            <span>🔍 ${parseInt(c.card_count, 10) || 0} RAG Cards</span>
-          </div>
-          <button class="btn-primary" style="margin-top:auto;" onclick="selectCourse('${escapeHTML(c.id)}')">
-            ${c.id === currentCourseId ? '✓ Active Course' : 'Switch to Course'}
-          </button>
-        `;
+        card.className = 'course-card' + (course.id === currentCourseId ? ' active-card' : '');
+
+        const header = document.createElement('div');
+        header.className = 'course-header';
+
+        const code = document.createElement('span');
+        code.className = 'course-code';
+        code.textContent = course.code || '';
+        header.appendChild(code);
+
+        if (course.is_optional) {
+          const optional = document.createElement('span');
+          optional.style.cssText = 'font-size:10px; color:#f5c542; background:rgba(245,197,66,0.1); padding:2px 6px; border-radius:4px;';
+          optional.textContent = 'Optional';
+          header.appendChild(optional);
+        }
+
+        const title = document.createElement('div');
+        title.className = 'course-title';
+        title.textContent = course.title || '';
+
+        const description = document.createElement('div');
+        description.className = 'course-desc';
+        description.textContent = course.description || '';
+
+        const meta = document.createElement('div');
+        meta.className = 'course-meta';
+
+        const modules = document.createElement('span');
+        modules.textContent = `📖 ${parseInt(course.module_count, 10) || 0} Modules`;
+
+        const cards = document.createElement('span');
+        cards.textContent = `🔍 ${parseInt(course.card_count, 10) || 0} RAG Cards`;
+        meta.append(modules, cards);
+
+        const button = document.createElement('button');
+        button.className = 'btn-primary';
+        button.style.marginTop = 'auto';
+        button.textContent = course.id === currentCourseId ? '✓ Active Course' : 'Switch to Course';
+        button.addEventListener('click', () => selectCourse(course.id));
+
+        card.append(header, title, description, meta, button);
         grid.appendChild(card);
       });
     }
@@ -747,33 +774,13 @@ function setDemoCaption(text) {
       }
     }
 
-    function escapeHTML(str) {
-      if (str === null || str === undefined) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-
-    function formatMarkdown(text) {
-      if (!text) return '';
-      // Escape all HTML to prevent script/tag injection before markdown formatting
-      const safe = escapeHTML(text);
-      return safe
-        .replace(/^### (.*$)/gim, '<h4 style="margin: 8px 0 4px 0; color: #38bdf8; font-size: 14px;">$1</h4>')
-        .replace(/^## (.*$)/gim, '<h3 style="margin: 10px 0 4px 0; color: #38bdf8; font-size: 15px;">$1</h3>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/\*(.*?)\*/g, '<em>$1</em>')
-        .replace(/\n/g, '<br>');
-    }
-
     function appendMsg(text, sender) {
       const box = document.getElementById('chatMessages');
       const msg = document.createElement('div');
       msg.className = 'msg msg-' + (sender === 'user' ? 'user' : 'bot');
-      msg.innerHTML = formatMarkdown(text);
+      // Tutor and user text are untrusted. Render as a text node, never HTML.
+      msg.style.whiteSpace = 'pre-wrap';
+      msg.textContent = String(text ?? '');
       box.appendChild(msg);
       box.scrollTop = box.scrollHeight;
     }
@@ -827,8 +834,17 @@ function setDemoCaption(text) {
       const box = document.getElementById('chatMessages');
       const hName = document.getElementById('headerCourseName');
       const title = hName ? hName.textContent : 'Course';
-      box.innerHTML = `<div class="msg msg-bot">Session context refreshed for <strong>${escapeHTML(title)}</strong>. What would you like to explore?</div>`;
-      document.getElementById('evidenceList').innerHTML = '<p style="font-size: 12px; color: #64748b;">Submit a query to inspect real-time RAG grounding cards and source citations.</p>';
+
+      const welcome = document.createElement('div');
+      welcome.className = 'msg msg-bot';
+      welcome.textContent = `Session context refreshed for ${title}. What would you like to explore?`;
+      box.replaceChildren(welcome);
+
+      const evidenceList = document.getElementById('evidenceList');
+      const empty = document.createElement('p');
+      empty.style.cssText = 'font-size: 12px; color: #64748b;';
+      empty.textContent = 'Submit a query to inspect real-time RAG grounding cards and source citations.';
+      evidenceList.replaceChildren(empty);
       document.getElementById('groundingBadge').style.display = 'none';
     }
 
