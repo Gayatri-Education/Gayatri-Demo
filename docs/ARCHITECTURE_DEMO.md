@@ -19,3 +19,14 @@ The v4 demo showcases the Gayatri platform capabilities through a self-contained
 1. **Zero External Egress:** Local loopback socket binding (`127.0.0.1`) only.
 2. **Deterministic Fallbacks:** If native AVX2 model inference is not available on test hardware, the AI adapter switches smoothly to the deterministic pedagogical rule engine without crashing.
 3. **No Cross-Course Leakage:** RAG queries are explicitly filtered by `course_id`.
+ ## Documentation Maintenance
+
+This document should be updated whenever the project architecture,
+major components, or module responsibilities change.
+
+### Contribution Guidelines
+
+- Keep architecture descriptions consistent with the actual project structure.
+- Update module descriptions when components are added or modified.
+- Use clear headings and Markdown formatting.
+- Verify documentation against the current source code before submitting changes.
