@@ -1,9 +1,12 @@
 ﻿"""Gayatri AI Platform — Document Parsers."""
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import List
 from central_platform.rag.cleaner import DocumentCleaner
+
+logger = logging.getLogger(__name__)
 
 class DocumentParserRouter:
     """Routes files to appropriate safe text parsers."""
@@ -36,7 +39,7 @@ class DocumentParserRouter:
                 pages.append(extracted)
             return DocumentCleaner.clean("\n".join(pages))
         except Exception:
-            # Fallback for plain reading if pypdf unavailable
+            logger.exception("Failed to parse PDF document: %s", path)
             return ""
 
     @staticmethod
@@ -47,4 +50,5 @@ class DocumentParserRouter:
             paragraphs = [p.text for p in doc.paragraphs if p.text]
             return DocumentCleaner.clean("\n".join(paragraphs))
         except Exception:
+            logger.exception("Failed to parse DOCX document: %s", path)
             return ""
