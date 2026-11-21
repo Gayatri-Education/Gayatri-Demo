@@ -1,0 +1,178 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2870
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 import json\
+import logging\
+from pathlib import Path\
+from typing import Dict, List, Optional\
+\
+from exam_pipeline import (\
+    TopicPriorityModel,\
+    QuestionValidator,\
+    run_pipeline,\
+    make_lm_studio_client,\
+)\
+\
+logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")\
+log = logging.getLogger("generator")\
+\
+class GroundedQuestionGenerator:\
+    def __init__(\
+        self,\
+        bank_path: str = "data/Question_Bank/processed/questions.json",\
+        syllabus_dir: str = "data/syllabus",\
+        lm_url: str = "http://localhost:1234/v1",\
+        model_name: str = "local-model",\
+    ):\
+        self.bank_path = Path(bank_path)\
+        self.syllabus_dir = Path(syllabus_dir)\
+        self.llm = make_lm_studio_client(base_url=lm_url, model=model_name)\
+        self.validator = QuestionValidator(processed_bank_path=str(self.bank_path))\
+\
+        with open(self.bank_path, "r", encoding="utf-8") as f:\
+            self.historical_bank: List[dict] = json.load(f)\
+\
+        self.priority_model = TopicPriorityModel(\
+            records=self.historical_bank,\
+            w_repetition=0.6,\
+            w_overdue=0.4,\
+        )\
+\
+    def _get_syllabus_snippet(self, chapter: str) -> str:\
+        clean_name = chapter.lower().replace(" ", "_").replace(":", "")\
+        file_path = self.syllabus_dir / f"\{clean_name\}.txt"\
+        if file_path.exists():\
+            with open(file_path, "r", encoding="utf-8") as f:\
+                return f.read()[:2500]\
+        return f"Core NCERT concepts and mechanisms related to \{chapter\}."\
+\
+    def _get_historical_examples(self, chapter: str, limit: int = 2) -> str:\
+        matches = [\
+            f"- Question: \{q['text']\}\\n  Answer: \{q.get('correct_option', 'N/A')\}"\
+            for q in self.historical_bank\
+            if q.get("chapter", "").strip().lower() == chapter.strip().lower()\
+        ]\
+        return "\\n".join(matches[:limit]) if matches else "No prior exam samples available."\
+\
+    def _build_generation_prompt(\
+        self,\
+        subject: str,\
+        chapter: str,\
+        difficulty: str,\
+        syllabus_text: str,\
+        pyq_examples: str,\
+        feedback: Optional[str] = None,\
+    ) -> str:\
+        retry_block = f"\\nPREVIOUS ATTEMPT FAILED: \{feedback\}\\nFix these issues.\\n" if feedback else ""\
+\
+        return f"""You are an elite item-writer for the National Eligibility cum Entrance Test (NEET UG).\
+\
+TASK:\
+Create a single multiple-choice question (MCQ) for NEET \{subject\}.\
+- Chapter: \{chapter\}\
+- Target Difficulty: \{difficulty\}\
+\{retry_block\}\
+GROUNDING SOURCE:\
+\\"\\"\\"\
+\{syllabus_text\}\
+\\"\\"\\"\
+\
+STYLE BENCHMARKS:\
+\\"\\"\\"\
+\{pyq_examples\}\
+\\"\\"\\"\
+\
+STRICT GENERATION CONSTRAINTS:\
+1. ONLY use factual statements supported by the Grounding Source above.\
+2. Provide exactly 4 distinct options (option_a, option_b, option_c, option_d).\
+3. Do NOT use compound options like "All of the above", "None of the above", or "Both A and B".\
+4. Keep all 4 options roughly similar in character length.\
+5. There must be exactly ONE scientifically indisputable correct option.\
+6. Provide a clear explanation referencing the Grounding Source.\
+\
+Respond with a single raw JSON object only:\
+\{\{\
+  "text": "<question stem>",\
+  "option_a": "<option A>",\
+  "option_b": "<option B>",\
+  "option_c": "<option C>",\
+  "option_d": "<option D>",\
+  "correct_option": "<A, B, C, or D>",\
+  "explanation": "<detailed rationale>",\
+  "difficulty": "\{difficulty\}",\
+  "subject": "\{subject\}",\
+  "chapter": "\{chapter\}"\
+\}\}"""\
+\
+    def generate_single_validated_question(\
+        self, subject: str, chapter: str, difficulty: str, max_retries: int = 4\
+    ) -> Optional[dict]:\
+        syllabus_text = self._get_syllabus_snippet(chapter)\
+        pyq_examples = self._get_historical_examples(chapter)\
+        feedback = None\
+\
+        for attempt in range(1, max_retries + 1):\
+            log.info("Generating [%s | %s | %s] (Attempt %d/%d)...", subject, chapter, difficulty, attempt, max_retries)\
+\
+            prompt = self._build_generation_prompt(\
+                subject=subject,\
+                chapter=chapter,\
+                difficulty=difficulty,\
+                syllabus_text=syllabus_text,\
+                pyq_examples=pyq_examples,\
+                feedback=feedback,\
+            )\
+\
+            raw_response = self.llm(prompt)\
+\
+            try:\
+                candidate = json.loads(raw_response.strip())\
+            except json.JSONDecodeError:\
+                feedback = "Output was not valid JSON. Return strictly a raw JSON object."\
+                continue\
+\
+            report = run_pipeline(\
+                validator=self.validator,\
+                raw_candidate=candidate,\
+                llm=self.llm,\
+                add_on_accept=True,\
+                priority_model=self.priority_model,\
+            )\
+\
+            if report.verdict == "accept":\
+                log.info("PASSED all checks on attempt %d.", attempt)\
+                return candidate\
+\
+            feedback = "; ".join(report.reasons)\
+            log.warning("REJECTED on attempt %d: %s", attempt, feedback)\
+\
+        log.error("Failed to generate a valid question after %d attempts.", max_retries)\
+        return None\
+\
+    def execute_plan_to_database(self, total_questions: int, output_path: str = "data/verified_batch.json"):\
+        plan = self.priority_model.plan(total_questions=total_questions)\
+        approved_batch = []\
+\
+        for row in plan:\
+            subject, chapter = row.key\
+            for diff_level, count in row.difficulty_counts.items():\
+                for _ in range(count):\
+                    valid_q = self.generate_single_validated_question(\
+                        subject=subject, chapter=chapter, difficulty=diff_level\
+                    )\
+                    if valid_q:\
+                        approved_batch.append(valid_q)\
+\
+        Path(output_path).parent.mkdir(parents=True, exist_ok=True)\
+        with open(output_path, "w", encoding="utf-8") as f:\
+            json.dump(approved_batch, f, indent=2)\
+\
+        log.info("Saved %d verified questions to %s.", len(approved_batch), output_path)\
+\
+if __name__ == "__main__":\
+    generator = GroundedQuestionGenerator()\
+    generator.execute_plan_to_database(total_questions=5)}
