@@ -190,7 +190,7 @@ class LocalSemanticRetriever:
         # 1. Attempt loading from cache
         if cache_file.exists():
             try:
-                data = np.load(cache_file, allow_pickle=True)
+                data = np.load(cache_file, allow_pickle=False)
                 cached_ids = list(data["chunk_ids"])
                 cached_hashes = list(data["content_hashes"])
                 cached_embeddings = data["embeddings"]
@@ -222,8 +222,8 @@ class LocalSemanticRetriever:
             cache_file = self._cache_path()
             np.savez_compressed(
                 cache_file,
-                chunk_ids=np.array(self.chunk_ids, dtype=object),
-                content_hashes=np.array(current_hashes, dtype=object),
+                chunk_ids=np.array(self.chunk_ids, dtype=str),
+                content_hashes=np.array(current_hashes, dtype=str),
                 embeddings=self.embeddings,
             )
             logger.debug("Saved %d embeddings for %s to %s", len(self.chunks), self.course_id, cache_file)
@@ -252,8 +252,8 @@ class LocalSemanticRetriever:
             self.cache_dir.mkdir(parents=True, exist_ok=True)
             np.savez_compressed(
                 self._cache_path(),
-                chunk_ids=np.array(self.chunk_ids, dtype=object),
-                content_hashes=np.array(current_hashes, dtype=object),
+                chunk_ids=np.array(self.chunk_ids, dtype=str),
+                content_hashes=np.array(current_hashes, dtype=str),
                 embeddings=self.embeddings,
             )
         except Exception as exc:
